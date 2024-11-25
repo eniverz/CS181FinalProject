@@ -1,50 +1,30 @@
-# React + TypeScript + Vite
+# Chinese Checker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Frontend
+use react for frontend UI
 
-Currently, two official plugins are available:
+- [x] start scene
+- [ ] play scene
+- [ ] single player
+- [ ] multiple player
+- [ ] with AI
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Backend
 
-## Expanding the ESLint configuration
+use fast API for service
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Connect with frontend
 
-- Configure the top-level `parserOptions` property like this:
+- [x] fastapi entry point
+- [ ] connect
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+### Algorithm
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+- [ ] game: init (number of players, type of game(play with AI? AI v.s. AI?), current state, ...anything)
+- [ ] game: create board(all available position, all checker, which position has checker)
+- [ ] game: checker(record checker position, record which player this checker belong to, get checker by position)
+- [ ] game: current player(which checker could be selected) => return a list of checker
+- [ ] game: which position is available for selected checker => return a list of position
+- [ ] agent: reward function or evaluate function( the distance to target? )
+- [ ] agent: use minmax search
+- [ ] agent: use reinforcement learning
