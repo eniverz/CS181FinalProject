@@ -1,5 +1,5 @@
 class Node:
-    def __init__(self, value, nxt):
+    def __init__(self, value, nxt=None):
         self.value = value
         self.nxt = nxt
 
@@ -18,12 +18,13 @@ class Queue:
         else:
             self.rear.nxt = new_node
             self.rear = new_node
+        assert(not self.empty())
 
     def pop(self):
         if self.empty():
             raise IndexError("Pop from empty queue")
         result = self.front.value
-        self.front = self.front.next
+        self.front = self.front.nxt
         if self.front is None:
             self.rear = None
         return result
