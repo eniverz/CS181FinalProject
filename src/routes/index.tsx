@@ -2,6 +2,7 @@ import { RouteObject } from "react-router"
 import { lazy } from "react"
 
 const Start = lazy(() => import("@/pages/Start"))
+const Game = lazy(() => import("@/pages/Game"))
 
 export const routes: RouteObject[] = [
     {
@@ -14,6 +15,6 @@ export const routes: RouteObject[] = [
     },
     {
         path: "/play",
-        element: <></>
+        element: <Game />
     }
 ]

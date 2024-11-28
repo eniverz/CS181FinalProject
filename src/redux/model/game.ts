@@ -10,6 +10,6 @@ export type GameState = {
 
 export type Game = {
     type?: "single" | "multi" | "AI" | "AI vs AI"
-    players?: 1 | 2 | 3 | 4 | 5 | 6
+    players?: 1 | 2 | 3 | 6
     state: GameState
 }
