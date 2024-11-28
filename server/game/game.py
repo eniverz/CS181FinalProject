@@ -9,6 +9,10 @@ DIR = [(DX[i], DY[i]) for i in range(len(DX))]
 
 class Board:
     def __init__(self, board_size, player_num):
+        '''
+        each player has 1+2+...+board_size checkers
+        the board is made up of one upward triangle and one downward triangle
+        '''
         assert player_num in [1,2,3,6], "player_num should be 1,2,3 or 6"
         self.len = board_size * 4 + 1
         self.N = board_size
@@ -58,6 +62,9 @@ class Board:
                     self.checkerlist[player_id].append(pos)
 
     def posInBoard(self, pos):
+        '''
+        check if pos is in the board
+        '''
         # pos in upside-triangle
         if pos[1] >= self.N and pos[0] >= self.N and pos[0]+pos[1] <= 5*self.N:
             return True
@@ -67,9 +74,15 @@ class Board:
         return False
     
     def posEmpty(self, pos):
+        '''
+        check if pos is in the board and empty
+        '''
         return self.posInBoard(pos) and self.board[pos[0]][pos[1]] == EMPTY_BOX
     
     def posNotEmpty(self, pos):
+        '''
+        check if pos is in the board and not empty
+        '''
         return self.posInBoard(pos) and self.board[pos[0]][pos[1]] != EMPTY_BOX
     
 
@@ -77,6 +90,10 @@ class Board:
         return self.checkerlist[player_id]
 
     def moveChecker(self, start_pos, end_pos, player_id):
+        '''
+        move the checker that belongs to player_id from start to end
+        return the new board after the movement
+        '''
         assert self.posInBoard(start_pos), f'Start position {start_pos} not in board'
         assert self.posInBoard(end_pos), f'End position {end_pos} not in board'
         assert self.board[start_pos[0]][start_pos[1]] == player_id, f'Start position does not belong to {player_id}: {start_pos}->{end_pos}'
@@ -91,6 +108,10 @@ class Board:
         return newBoard
 
     def nextSteps(self, pos):
+        '''
+        get the next steps of certain position
+        return the list of new positions
+        '''
         possibleList = []
 
         # check neighbor
@@ -114,7 +135,7 @@ class Board:
                             possibleList.append(npos)
                             q.push(npos)
                             vis.add(npos)
-        print(pos, possibleList)
+        # print(pos, possibleList)
         return possibleList
 
     def debugPlayerCheckers(self):
@@ -126,10 +147,16 @@ class Board:
 
 class GameState:
     def __init__(self, board_size:int, player_num:int):
+        '''
+        gamestate is made up of a board and the currnet player id
+        '''
         self.board = Board(board_size, player_num)
         self.curPID = 0
     
     def nextGameStates(self):
+        '''
+        get the list of possible next game states
+        '''
         b = self.board
         curPID = self.curPID
         nxtPID = (self.curPID + 1) % b.player_num
