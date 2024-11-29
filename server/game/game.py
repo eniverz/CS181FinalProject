@@ -43,7 +43,7 @@ class Board:
         triangle_id = 3
         for i in range(board_size):
             for j in range(i+1):
-                pos = (board_size+j, 3*board_size+1+i)
+                pos = (2*board_size-1-i, 3*board_size+1+j)
                 triangle_pos_list[triangle_id].append(pos)
 
         triangle_id = 4
