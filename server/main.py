@@ -2,13 +2,13 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError, ValidationException
 from fastapi.middleware.cors import CORSMiddleware
 
-from game.game import GameState
+from game.game import GameState, EMPTY_BOX
 from service.utils import Result
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-game = GameState(4, 2)
+game = GameState(4, 6)
 
 @app.get("/")
 def get_root():
@@ -18,3 +18,10 @@ def get_root():
 def get_all_board_position():
     position = [[i, j] for i in range(17) for j in range(17) if game.board.posInBoard((i, j))]
     return Result.ok(data=position)
+
+@app.get("/checker/all_position/{player_num}")
+def get_all_checker_position(player_num: int):
+    pos = []
+    for i in range(player_num):
+        pos.extend([[x, y, i] for x, y in game.board.getPlayerCheckers(i)])
+    return Result.ok(data=pos)
