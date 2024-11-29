@@ -214,3 +214,6 @@ class GameState:
                 newGameState.board = b.moveChecker(pos, nxtpos, curPID)
                 newstates.append(newGameState)
         return newstates
+
+    def checkWin(self):
+        return self.board.checkWin(self.curPID)
