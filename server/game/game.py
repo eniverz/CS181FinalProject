@@ -19,47 +19,75 @@ class Board:
         self.player_num = player_num
         self.board = [[EMPTY_BOX for i in range(self.len)] for j in range(self.len)]
         self.checkerlist = [[] for player in range(player_num)]
-        if player_num >= 1:
-            player_id = 0
-            for i in range(board_size):
-                for j in range(i+1):
-                    pos = (3*board_size-j, i)
-                    self.board[pos[0]][pos[1]] = player_id
-                    self.checkerlist[player_id].append(pos)
-        if player_num == 2 or player_num == 6:
-            player_id = 1 if player_num == 2 else 3
-            for i in range(board_size):
-                for j in range(i+1):
-                    pos = (board_size+j, 3*board_size+1+i)
-                    self.board[pos[0]][pos[1]] = player_id
-                    self.checkerlist[player_id].append(pos)
-        if player_num == 3 or player_num == 6:
-            player_id = 1 if player_num == 3 else 2
-            for i in range(board_size):
-                for j in range(i+1):
-                    pos = (i, 3*board_size-j)
-                    self.board[pos[0]][pos[1]] = player_id
-                    self.checkerlist[player_id].append(pos)
-            player_id = 2 if player_num == 3 else 4
-            for i in range(board_size):
-                for j in range(i+1):
-                    pos = (2*board_size+1+i, 3*board_size-j)
-                    self.board[pos[0]][pos[1]] = player_id
-                    self.checkerlist[player_id].append(pos)
+        self.winstate_pos = [set() for player in range(player_num)]
+        triangle_pos_list = [[] for triagle_id in range(6)] # the positions of the six triangles
+
+        triangle_id = 0
+        for i in range(board_size):
+            for j in range(i+1):
+                pos = (3*board_size-j, i)
+                triangle_pos_list[triangle_id].append(pos)
+
+        triangle_id = 1
+        for i in range(board_size):
+            for j in range(i+1):
+                pos = (2*board_size-1-i, board_size+j)
+                triangle_pos_list[triangle_id].append(pos)
+
+        triangle_id = 2
+        for i in range(board_size):
+            for j in range(i+1):
+                pos = (i, 3*board_size-j)
+                triangle_pos_list[triangle_id].append(pos)
+
+        triangle_id = 3
+        for i in range(board_size):
+            for j in range(i+1):
+                pos = (board_size+j, 3*board_size+1+i)
+                triangle_pos_list[triangle_id].append(pos)
+
+        triangle_id = 4
+        for i in range(board_size):
+            for j in range(i+1):
+                pos = (2*board_size+1+i, 3*board_size-j)
+                triangle_pos_list[triangle_id].append(pos)
         
-        if player_num == 6:
-            player_id = 1
-            for i in range(board_size):
-                for j in range(i+1):
-                    pos = (2*board_size-1-i, board_size+j)
-                    self.board[pos[0]][pos[1]] = player_id
-                    self.checkerlist[player_id].append(pos)
-            player_id = 5
-            for i in range(board_size):
-                for j in range(i+1):
-                    pos = (4*board_size-i, board_size+j)
-                    self.board[pos[0]][pos[1]] = player_id
-                    self.checkerlist[player_id].append(pos)
+        triangle_id = 5
+        for i in range(board_size):
+            for j in range(i+1):
+                pos = (4*board_size-i, board_size+j)
+                triangle_pos_list[triangle_id].append(pos)
+
+        if player_num == 1:
+            self.checkerlist[0] = deepcopy(triangle_pos_list[0])
+            self.winstate_pos[0] = set(triangle_pos_list[3])
+
+        elif player_num == 2:
+            self.checkerlist[0] = deepcopy(triangle_pos_list[0])
+            self.checkerlist[1] = deepcopy(triangle_pos_list[3])
+            self.winstate_pos[0] = set(triangle_pos_list[3])
+            self.winstate_pos[1] = set(triangle_pos_list[0])
+
+        elif player_num == 3:
+            self.checkerlist[0] = deepcopy(triangle_pos_list[0])
+            self.checkerlist[1] = deepcopy(triangle_pos_list[2])
+            self.checkerlist[2] = deepcopy(triangle_pos_list[4])
+            self.winstate_pos[0] = set(triangle_pos_list[3])
+            self.winstate_pos[1] = set(triangle_pos_list[5])
+            self.winstate_pos[2] = set(triangle_pos_list[1])
+
+        elif player_num == 6:
+            self.checkerlist = deepcopy(triangle_pos_list)
+            self.winstate_pos[0] = set(triangle_pos_list[3])
+            self.winstate_pos[1] = set(triangle_pos_list[4])
+            self.winstate_pos[2] = set(triangle_pos_list[5])
+            self.winstate_pos[3] = set(triangle_pos_list[0])
+            self.winstate_pos[4] = set(triangle_pos_list[1])
+            self.winstate_pos[5] = set(triangle_pos_list[2])
+
+        for player_id in range(player_num):
+            for x,y in self.checkerlist[player_id]:
+                self.board[x][y] = player_id
 
     def posInBoard(self, pos):
         '''
@@ -85,7 +113,6 @@ class Board:
         '''
         return self.posInBoard(pos) and self.board[pos[0]][pos[1]] != EMPTY_BOX
     
-
     def getPlayerCheckers(self, player_id):
         return self.checkerlist[player_id]
 
@@ -137,6 +164,24 @@ class Board:
                             vis.add(npos)
         # print(pos, possibleList)
         return possibleList
+
+    def checkWin(self, player_id):
+        '''
+        check whether player_id has won
+        '''
+        return len(set(self.checkerlist[player_id]) & self.winstate_pos[player_id]) == len(self.winstate_pos[player_id])
+
+    def checkLose(self, player_id):
+        '''
+        check whether player_id loses by having no available move
+        '''
+        assert True, 'This function should not be called, since checking len(nextGameStates)==0 \
+                      when calling nextGameState should be a better approach.'
+        for pos in self.checkerlist[player_id]:
+            if len(self.nextSteps(pos)) > 0:
+                return True
+        return False
+
 
     def debugPlayerCheckers(self):
         for player_id in range(self.player_num):
