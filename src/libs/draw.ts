@@ -1,4 +1,7 @@
+import { RootDispatch } from "@/redux/model"
+import { CanvasConfig } from "@/redux/model/canvas"
 import { Checker } from "@/redux/model/checker"
+import { setCanvasConfig } from "@/redux/service/canvas"
 
 const drawDot = (ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, fill = "white", stroke = "black") => {
     ctx.beginPath()
@@ -9,7 +12,7 @@ const drawDot = (ctx: CanvasRenderingContext2D, x: number, y: number, radius: nu
     ctx.stroke()
 }
 
-export const drawBoard = (canvas: HTMLCanvasElement, width: number, height: number, board: [number, number][]) => {
+export const drawBoard = (canvas: HTMLCanvasElement, width: number, height: number, board: Set<string>, dispatch: RootDispatch) => {
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
@@ -31,16 +34,37 @@ export const drawBoard = (canvas: HTMLCanvasElement, width: number, height: numb
     const startX = centerX - 8 * (1 + 0.5) * margin
     const startY = centerY - 8 * Math.sqrt(0.75) * margin
 
+    dispatch(setCanvasConfig({ width, height, dotRadius, margin, centerX, centerY, startX, startY }))
+
     // Function to draw a dot
 
-    for (const pos of board) {
+    for (const position of board) {
+        const pos = JSON.parse(position) as [number, number]
         const x = startX + (pos[0] + 0.5 * pos[1]) * margin
         const y = startY + pos[1] * Math.sqrt(0.75) * margin
         drawDot(ctx, x, y, dotRadius)
     }
 }
 
-export const getClickedChecker = (canvas: HTMLCanvasElement, width: number, height: number, clickEvent: React.MouseEvent<HTMLCanvasElement>) => {}
+export const getClickedChecker = (
+    canvas: HTMLCanvasElement,
+    canvasConfig: CanvasConfig,
+    clickEvent: React.MouseEvent<HTMLCanvasElement>
+): [number, number, number, number] | [undefined, undefined, undefined, undefined] => {
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return [undefined, undefined, undefined, undefined]
+    const { dotRadius, margin, startX, startY, board } = canvasConfig
+    const rect = canvas.getBoundingClientRect()
+    const x = clickEvent.clientX - rect.left
+    const y = clickEvent.clientY - rect.top
+    const posY = Math.floor((y - startY) / (Math.sqrt(0.75) * margin) + 0.5)
+    const posX = Math.floor((x - startX) / margin - posY * 0.5 + 0.5)
+    if (!board.has(JSON.stringify([posX, posY]))) return [undefined, undefined, undefined, undefined]
+    const actX = startX + (posX + 0.5 * posY) * margin
+    const actY = startY + posY * Math.sqrt(0.75) * margin
+    if (Math.sqrt((x - actX) ** 2 + (y - actY) ** 2) > dotRadius) return [undefined, undefined, undefined, undefined]
+    return [posX, posY, actX, actY]
+}
 
 export const drawChecker = (canvas: HTMLCanvasElement, width: number, height: number, checkers: Checker[]) => {
     const centerX = width / 2

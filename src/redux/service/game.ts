@@ -6,8 +6,7 @@ const initialState: Game = {
         checkers: [],
         currentPlayer: null,
         selected: null,
-        step: 0,
-        board: []
+        step: 0
     }
 }
 
@@ -15,10 +14,10 @@ const game = createSlice({
     name: "game",
     initialState,
     reducers: {
-        setType(state, { payload }: {payload: Game["type"]}) {
-            state.type = payload
+        setType(state, { payload }: { payload: Game["gameType"] }) {
+            state.gameType = payload
         },
-        setNumPlayers(state, { payload }: {payload: Game["players"]}) {
+        setNumPlayers(state, { payload }: { payload: Game["players"] }) {
             state.players = payload
         }
     }

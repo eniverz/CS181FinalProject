@@ -1,19 +1,17 @@
-import { drawBoard, drawChecker } from "@/libs/draw"
+import { drawBoard, drawChecker, getClickedChecker } from "@/libs/draw"
 import request from "@/libs/request"
+import { RootDispatch, RootState } from "@/redux/model"
 import { Checker, Player } from "@/redux/model/checker"
 import { useRequest } from "ahooks"
 import { useEffect, useRef, useCallback, useState } from "react"
-import { useImmer } from "use-immer"
+import { useDispatch, useSelector } from "react-redux"
 
 export default () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
-    const [board, setBoard] = useState<[number, number][]>([])
     const [checkers, setCheckers] = useState<Checker[]>([])
+    const canvasConfig = useSelector((state: RootState) => state.canvas)
+    const dispatch = useDispatch<RootDispatch>()
 
-    useRequest(async () => (await request.get("/board/all_position")).data as [number, number][], {
-        onSuccess: (data) => setBoard(data),
-        onError: (err) => console.error(err)
-    })
     useRequest(async () => (await request.get(`/checker/all_position/${6}`)).data as [number, number, Player][], {
         onSuccess: (data) => {
             for (const [x, y, player] of data) {
@@ -36,19 +34,10 @@ export default () => {
         if (!canvas) return
         const ctx = canvas.getContext("2d")
         if (!ctx) return
-        const rect = canvas.getBoundingClientRect()
-        const x = event.clientX - rect.left
-        const y = event.clientY - rect.top
-        const width = canvas.width
-        const height = canvas.height
-        const margin = 2.5 * 0.02 * Math.min(width, height)
-        const startX = width / 2 - 8 * (1 + 0.5) * margin
-        const startY = height / 2 - 8 * Math.sqrt(0.75) * margin
-        const posY = Math.floor((y - startY) / (Math.sqrt(0.75) * margin) + 0.5)
-        const posX = Math.floor((x - startX) / margin - posY * 0.5 + 0.5)
-        console.log(posX, posY)
+        const [posX, posY, actX, actY] = getClickedChecker(canvas, canvasConfig, event)
+        if (posX === undefined || posY === undefined || actX === undefined || actY === undefined) return
         ctx.beginPath()
-        ctx.arc(startX + (posX + 0.5 * posY) * margin, startY + posY * Math.sqrt(0.75) * margin, 0.02 * Math.min(width, height), 0, Math.PI * 2)
+        ctx.arc(actX, actY, canvasConfig.dotRadius, 0, Math.PI * 2)
         ctx.fillStyle = "black"
         ctx.fill()
     }, [])
@@ -60,7 +49,7 @@ export default () => {
         const resizeCanvas = () => {
             canvas.width = window.innerWidth
             canvas.height = window.innerHeight
-            memeDrawBorad(canvas, canvas.width, canvas.height, board)
+            memeDrawBorad(canvas, canvas.width, canvas.height, canvasConfig.board, dispatch)
         }
         // Initial resize
         resizeCanvas()
@@ -68,7 +57,7 @@ export default () => {
         window.addEventListener("resize", resizeCanvas)
         // Cleanup listener on unmount
         return () => window.removeEventListener("resize", resizeCanvas)
-    }, [memeDrawBorad, board])
+    }, [memeDrawBorad])
 
     useEffect(() => {
         const canvas = canvasRef.current
