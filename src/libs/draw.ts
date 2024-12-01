@@ -53,8 +53,6 @@ export const getClickedChecker = (
     canvasConfig: CanvasConfig,
     clickEvent: React.MouseEvent<HTMLCanvasElement>
 ): [number, number, number, number] | [undefined, undefined, undefined, undefined] => {
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return [undefined, undefined, undefined, undefined]
     const { dotRadius, margin, startX, startY } = canvasConfig
     const rect = canvas.getBoundingClientRect()
     const x = clickEvent.clientX - rect.left
