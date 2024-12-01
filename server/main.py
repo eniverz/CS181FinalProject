@@ -8,12 +8,19 @@ from service.utils import HttpStatus, Result
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-game = GameState(4, 6)
+game = GameState(4, 1)
 
 
 @app.get("/")
 def get_root():
     return {"message": "Hello World"}
+
+
+@app.post("/game/init")
+def init_game(board_size: int = 4, player_num: int = 1):
+    global game
+    game = GameState(board_size, player_num)
+    return Result.ok()
 
 
 @app.get("/checker/all_position/{player_num}")

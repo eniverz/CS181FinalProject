@@ -1,32 +1,39 @@
 import GlassButton from "@/components/GlassButton"
+import request from "@/libs/request"
 import { RootDispatch } from "@/redux/model"
 import { setNumPlayers, setType } from "@/redux/service/game"
+import { useRequest } from "ahooks"
 import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router"
 
 export default () => {
     const navigate = useNavigate()
     const dispatch = useDispatch<RootDispatch>()
+    const { runAsync } = useRequest(async (player_num: number) => await request.post("/game/init", null, { params: { player_num } }), { manual: true })
 
-    const singlePlayer = () => {
-        navigate("/play")
+    const singlePlayer = async () => {
         dispatch(setType("single"))
         dispatch(setNumPlayers(1))
-    }
-    const multiplePlayer = () => {
+        await runAsync(1)
         navigate("/play")
+    }
+    const multiplePlayer = async () => {
         dispatch(setType("multi"))
         dispatch(setNumPlayers(2))
-    }
-    const playWithAI = () => {
+        await runAsync(2)
         navigate("/play")
+    }
+    const playWithAI = async () => {
         dispatch(setType("AI"))
         dispatch(setNumPlayers(2))
-    }
-    const AIWithAI = () => {
+        await runAsync(2)
         navigate("/play")
+    }
+    const AIWithAI = async () => {
         dispatch(setType("AI vs AI"))
         dispatch(setNumPlayers(2))
+        await runAsync(2)
+        navigate("/play")
     }
 
     return (

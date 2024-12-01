@@ -3,7 +3,6 @@ import { Checker, Player } from "./checker"
 export type GameState = {
     checkers: Checker[]
     currentPlayer: Player | null
-    selected: Checker | null
     step: number
 }
 

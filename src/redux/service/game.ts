@@ -5,7 +5,6 @@ const initialState: Game = {
     state: {
         checkers: [],
         currentPlayer: null,
-        selected: null,
         step: 0
     }
 }
