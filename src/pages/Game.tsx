@@ -16,10 +16,10 @@ export default () => {
     const gameState = useSelector((state: RootState) => state.game)
     const dispatch = useDispatch<RootDispatch>()
 
-    const getCheckers = useRequest(async () => (await request.get(`/checker/all_position/${gameState.players ?? 1}`)).data as [number, number, Player][], {
+    const getCheckers = useRequest(async () => (await request.get(`/checker/all_position/${gameState.players ?? 1}`)) as Response<[number, number, Player][]>, {
         manual: true,
         onSuccess: (data) => {
-            for (const [x, y, player] of data) {
+            for (const [x, y, player] of data.data) {
                 const checker: Checker = {
                     color: ["red", "blue", "green", "yellow", "purple", "orange"][player],
                     player,
@@ -114,7 +114,7 @@ export default () => {
                 canvas,
                 canvas.width,
                 canvas.height,
-                res.map(([x, y, player]) => ({
+                res.data.map(([x, y, player]) => ({
                     color: ["red", "blue", "green", "yellow", "purple", "orange"][player],
                     player,
                     position: [x, y]
