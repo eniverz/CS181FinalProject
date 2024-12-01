@@ -3,6 +3,8 @@ import { CanvasConfig } from "@/redux/model/canvas"
 import { Checker } from "@/redux/model/checker"
 import { setCanvasConfig } from "@/redux/service/canvas"
 
+const config = { board: new Set<string>() }
+
 const drawDot = (ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, fill = "white", stroke = "black") => {
     ctx.beginPath()
     ctx.arc(x, y, radius, 0, Math.PI * 2)
@@ -12,7 +14,7 @@ const drawDot = (ctx: CanvasRenderingContext2D, x: number, y: number, radius: nu
     ctx.stroke()
 }
 
-export const drawBoard = (canvas: HTMLCanvasElement, width: number, height: number, board: Set<string>, dispatch: RootDispatch) => {
+export const drawBoard = (canvas: HTMLCanvasElement, width: number, height: number, board: [number, number][], dispatch: RootDispatch) => {
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
@@ -38,12 +40,12 @@ export const drawBoard = (canvas: HTMLCanvasElement, width: number, height: numb
 
     // Function to draw a dot
 
-    for (const position of board) {
-        const pos = JSON.parse(position) as [number, number]
+    for (const pos of board) {
         const x = startX + (pos[0] + 0.5 * pos[1]) * margin
         const y = startY + pos[1] * Math.sqrt(0.75) * margin
         drawDot(ctx, x, y, dotRadius)
     }
+    config.board = new Set(board.map((val) => JSON.stringify(val)))
 }
 
 export const getClickedChecker = (
@@ -53,13 +55,13 @@ export const getClickedChecker = (
 ): [number, number, number, number] | [undefined, undefined, undefined, undefined] => {
     const ctx = canvas.getContext("2d")
     if (!ctx) return [undefined, undefined, undefined, undefined]
-    const { dotRadius, margin, startX, startY, board } = canvasConfig
+    const { dotRadius, margin, startX, startY } = canvasConfig
     const rect = canvas.getBoundingClientRect()
     const x = clickEvent.clientX - rect.left
     const y = clickEvent.clientY - rect.top
     const posY = Math.floor((y - startY) / (Math.sqrt(0.75) * margin) + 0.5)
     const posX = Math.floor((x - startX) / margin - posY * 0.5 + 0.5)
-    if (!board.has(JSON.stringify([posX, posY]))) return [undefined, undefined, undefined, undefined]
+    if (!config.board.has(JSON.stringify([posX, posY]))) return [undefined, undefined, undefined, undefined]
     const actX = startX + (posX + 0.5 * posY) * margin
     const actY = startY + posY * Math.sqrt(0.75) * margin
     if (Math.sqrt((x - actX) ** 2 + (y - actY) ** 2) > dotRadius) return [undefined, undefined, undefined, undefined]
@@ -82,5 +84,35 @@ export const drawChecker = (canvas: HTMLCanvasElement, width: number, height: nu
         const x = startX + (pos[0] + 0.5 * pos[1]) * margin
         const y = startY + pos[1] * Math.sqrt(0.75) * margin
         drawDot(ctx, x, y, dotRadius, checker.color)
+    }
+}
+
+export const drawPosiblePos = (canvas: HTMLCanvasElement, canvasConfig: CanvasConfig, posiblePos: [number, number][]) => {
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+    const { dotRadius, margin, startX, startY } = canvasConfig
+    for (const pos of posiblePos) {
+        const x = startX + (pos[0] + 0.5 * pos[1]) * margin
+        const y = startY + pos[1] * Math.sqrt(0.75) * margin
+        drawDot(ctx, x, y, dotRadius, "rgba(0, 0, 0, 0.5)")
+    }
+}
+
+export const clearCycle = (canvas: HTMLCanvasElement, canvasConfig: CanvasConfig, position: [number, number] | [number, number][]) => {
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+    const { dotRadius, margin, startX, startY } = canvasConfig
+    if (typeof position[0] === "number" && typeof position[1] === "number") {
+        const x = startX + (position[0] + 0.5 * position[1]) * margin
+        const y = startY + position[1] * Math.sqrt(0.75) * margin
+        ctx.clearRect(x - dotRadius, y - dotRadius, 2 * dotRadius, 2 * dotRadius)
+        drawDot(ctx, x, y, dotRadius)
+    } else {
+        for (const pos of position as [number, number][]) {
+            const x = startX + (pos[0] + 0.5 * pos[1]) * margin
+            const y = startY + pos[1] * Math.sqrt(0.75) * margin
+            ctx.clearRect(x - dotRadius, y - dotRadius, 2 * dotRadius, 2 * dotRadius)
+            drawDot(ctx, x, y, dotRadius)
+        }
     }
 }

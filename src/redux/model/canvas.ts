@@ -1,4 +1,4 @@
-export type Board = Set<string>
+export type Board = [number, number][]
 
 export type CanvasConfig = {
     width: number

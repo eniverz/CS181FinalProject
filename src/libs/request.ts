@@ -1,8 +1,15 @@
-import axios from "axios"
+import axios, { AxiosError } from "axios"
+import { toast } from "sonner"
 
 const request = axios.create({
     baseURL: "http://localhost:8000"
 })
+
+export type Response<T = any> = {
+    msg: string
+    data: T
+    code: 200
+}
 
 request.interceptors.request.use(
     (config) => {
@@ -18,25 +25,23 @@ request.interceptors.request.use(
 )
 
 request.interceptors.response.use(
-    (res) => {
-        return res.data
-    },
-    (err) => {
-        switch (err.response.status) {
+    (res) => res.data,
+    (err: AxiosError<{ detail: string }, any>) => {
+        switch (err.status) {
             case 401: {
-                console.error("please login to access the resource", err)
+                toast.error("please login to access the resource")
                 break
             }
             case 403: {
-                console.error("you have no authorization to access the resource", err)
+                toast.error("you have no authorization to access the resource")
                 break
             }
             case 404: {
-                console.error("the resource is not found!", err)
+                toast.error("the resource is not found!")
                 break
             }
             default: {
-                console.error(err)
+                toast.error(err.response?.data?.detail ?? `Error: ${err.message}`)
             }
         }
     }

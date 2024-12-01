@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit"
 import { CanvasConfig } from "@/redux/model/canvas"
 
-const initialBoardPos = [
+const initialBoardPos: [number, number][] = [
     [0, 12],
     [1, 11],
     [1, 12],
@@ -126,7 +126,7 @@ const initialBoardPos = [
 ]
 
 const initialState: CanvasConfig = {
-    board: new Set(initialBoardPos.map((val) => JSON.stringify(val))),
+    board: initialBoardPos,
     width: window.innerWidth,
     height: window.innerHeight,
     dotRadius: Math.min(window.innerWidth, window.innerHeight) * 0.02,
@@ -141,7 +141,7 @@ const canvas = createSlice({
     name: "board",
     initialState,
     reducers: {
-        setCanvasConfig(state: CanvasConfig, { payload }: { payload: Partial<Omit<CanvasConfig, "board">> }) {
+        setCanvasConfig(state: CanvasConfig, { payload }: { payload: Partial<CanvasConfig> }) {
             if (payload.width) state.width = payload.width
             if (payload.height) state.height = payload.height
 
