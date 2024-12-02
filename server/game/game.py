@@ -147,6 +147,9 @@ class Board:
         '''
         possibleList = []
 
+        assert self.posInBoard(pos), "pos should be inside the board"
+        assert self.posNotEmpty(pos), "pos should not be empty"
+
         # check neighbor
         for dx, dy in DIR:
             npos = (pos[0]+dx, pos[1]+dy)

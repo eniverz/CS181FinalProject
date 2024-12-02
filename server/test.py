@@ -1,10 +1,13 @@
-from game.game import Board, GameState
+from game.game import Board, GameState, MIRROR_GT, ADJACENT_GT
 import numpy as np
 from copy import deepcopy
 
-gs = GameState(4, 1)
+gs = GameState(4, 1, MIRROR_GT)
 gs.board.debugPlayerCheckers()
-print(gs.board.board)
+gs.board = gs.board.moveChecker((9,3),(8,6),0)
+gs.board.debugPlayerCheckers()
+print(gs.board.nextSteps((10,2)))
+print(gs.board.nextSteps((11,2)))
 # print(gs.checkWin())
 # x = deepcopy(gs.board.checkerlist[1])
 # gs.board.checkerlist[1] = deepcopy(gs.board.checkerlist[0])
