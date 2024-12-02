@@ -2,13 +2,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError, ValidationException
 from fastapi.middleware.cors import CORSMiddleware
 
-from game.game import GameState
+from game.game import MIRROR_GT, GameState
 from service.utils import HttpStatus, Result
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-game = GameState(4, 1)
+game = GameState(4, 1, MIRROR_GT)
 
 
 @app.get("/")
@@ -19,7 +19,7 @@ def get_root():
 @app.post("/game/init")
 def init_game(board_size: int = 4, player_num: int = 1):
     global game
-    game = GameState(board_size, player_num)
+    game = GameState(board_size, player_num, MIRROR_GT)
     return Result.ok()
 
 
