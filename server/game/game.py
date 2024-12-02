@@ -175,11 +175,16 @@ class Board:
                 elif self.game_type == MIRROR_GT:
                     midpos = (cur[0]+dx, cur[1]+dy)
                     steps = 1
+                    flag = True
                     while self.posInBoard((midpos[0]+steps*dx, midpos[1]+steps*dy)):
                         if midpos != pos and self.posNotEmpty(midpos):
                             for t in range(1, steps):
                                 tpos = (midpos[0]+t*dx, midpos[1]+t*dy)
-                                if tpos != pos and self.posNotEmpty(tpos):break
+                                if tpos != pos and self.posNotEmpty(tpos):
+                                    flag = False
+                                    break
+                            if not flag:
+                                break
                             npos = (midpos[0]+steps*dx, midpos[1]+steps*dy)
                             if self.posEmpty(npos) and npos not in vis:
                                 possibleList.append(npos)
