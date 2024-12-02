@@ -216,7 +216,7 @@ class Board:
             print()
 
 class GameState:
-    def __init__(self, board_size:int, player_num:int, game_type:int=0):
+    def __init__(self, board_size:int, player_num:int, game_type:int=ADJACENT_GT):
         '''
         gamestate is made up of a board and the currnet player id
         '''
