@@ -2,8 +2,9 @@ from game.game import Board, GameState
 import numpy as np
 from copy import deepcopy
 
-gs = GameState(4, 6)
+gs = GameState(4, 1)
 gs.board.debugPlayerCheckers()
+print(gs.board.board)
 # print(gs.checkWin())
 # x = deepcopy(gs.board.checkerlist[1])
 # gs.board.checkerlist[1] = deepcopy(gs.board.checkerlist[0])

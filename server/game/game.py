@@ -7,13 +7,19 @@ DX = [-1, -1, 0, 0, 1, 1]
 DY = [0, 1, -1, 1, -1, 0]
 DIR = [(DX[i], DY[i]) for i in range(len(DX))]
 
+
+ADJACENT_GT = 0
+MIRROR_GT = 1
+
 class Board:
-    def __init__(self, board_size, player_num):
+    def __init__(self, board_size, player_num, game_type):
         '''
         each player has 1+2+...+board_size checkers
         the board is made up of one upward triangle and one downward triangle
         '''
         assert player_num in [1,2,3,6], "player_num should be 1,2,3 or 6"
+        assert game_type in [0,1], "game_type should be either ADJACENT_GT or MIRROR_GT"
+        self.game_type = game_type
         self.len = board_size * 4 + 1
         self.N = board_size
         self.player_num = player_num
@@ -149,19 +155,38 @@ class Board:
 
         # check jump
         vis = set()
+        vis.add(pos)
         q = Queue()
         q.push(pos)
         while not q.empty():
             cur = q.pop()
             for dx, dy in DIR:
-                midpos = (cur[0]+dx, cur[1]+dy)
-                if self.posNotEmpty(midpos):
-                    npos = (midpos[0]+dx, midpos[1]+dy)
-                    if npos not in vis:
-                        if self.posEmpty(npos):
+                if self.game_type == ADJACENT_GT:
+                    midpos = (cur[0]+dx, cur[1]+dy)
+                    if midpos != pos and self.posNotEmpty(midpos):
+                        npos = (midpos[0]+dx, midpos[1]+dy)
+                        if self.posEmpty(npos) and npos not in vis:
                             possibleList.append(npos)
                             q.push(npos)
                             vis.add(npos)
+                elif self.game_type == MIRROR_GT:
+                    midpos = (cur[0]+dx, cur[1]+dy)
+                    steps = 1
+                    while self.posInBoard((midpos[0]+steps*dx, midpos[1]+steps*dy)):
+                        if midpos != pos and self.posNotEmpty(midpos):
+                            for t in range(1, steps):
+                                tpos = (midpos[0]+t*dx, midpos[1]+t*dy)
+                                if tpos != pos and self.posNotEmpty(tpos):break
+                            npos = (midpos[0]+steps*dx, midpos[1]+steps*dy)
+                            if self.posEmpty(npos) and npos not in vis:
+                                possibleList.append(npos)
+                                q.push(npos)
+                                vis.add(npos)
+                            break
+                        midpos = (midpos[0]+dx, midpos[1]+dy)
+                        steps += 1
+
+
         # print(pos, possibleList)
         return possibleList
 
@@ -191,12 +216,13 @@ class Board:
             print()
 
 class GameState:
-    def __init__(self, board_size:int, player_num:int):
+    def __init__(self, board_size:int, player_num:int, game_type:int):
         '''
         gamestate is made up of a board and the currnet player id
         '''
-        self.board = Board(board_size, player_num)
+        self.board = Board(board_size, player_num, game_type)
         self.curPID = 0
+        self.game_type = game_type
     
     def nextGameStates(self):
         '''
