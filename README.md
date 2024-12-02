@@ -17,11 +17,13 @@ use fast API for service
 
 - [x] fastapi entry point
 - [x] get board
+- [x] move
+- [ ] is win / is loss
 - [ ] connect
 
 ### Algorithm
 
-- [ ] game: init (number of players, type of game(play with AI? AI v.s. AI?), current state, ...anything)
+- [x] game: init (number of players, type of game(play with AI? AI v.s. AI?), current state, ...anything)
 - [x] game: create board(all available position, all checker, which position has checker)
 - [ ] game: checker(record checker position, record which player this checker belong to, get checker by position)
 - [ ] game: current player(which checker could be selected) => return a list of checker

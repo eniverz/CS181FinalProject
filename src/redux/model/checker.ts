@@ -5,5 +5,3 @@ export type Checker = {
     player: Player
     position: [number, number]
 }
-
-export type Board = (number | null)[][]

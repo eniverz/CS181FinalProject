@@ -17,7 +17,7 @@ export default () => {
         }
         matched.map((item) => {
             const path = item.route.path
-            if (path === "/play" && !game.type) navigate("/")
+            if (path === "/play" && !game.gameType) navigate("/")
         })
     }, [pathname])
     return (
