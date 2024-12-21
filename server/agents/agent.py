@@ -17,4 +17,19 @@ class Agent:
         pass
 
     def evaluate(self, gameState):
-        pass
+        targetLine = [[0, 1, -13],[1, 0, -13],[1, -1, -5],[0, 1, -3], [1, 0, -3], [1, -1, 5]]
+        allCheckerValue = []
+        for pid in range(self.player_num):
+            PlayerCheckers = gameState.board.getPlayerCheckers(pid)
+            for checker in PlayerCheckers:
+                checker_x = checker[0]
+                checker_y = checker[1]
+                a = targetLine[pid][0]
+                b = targetLine[pid][1]
+                c = targetLine[pid][2]
+                dist = abs(checker_x * a + checker_y * b + c) / (a ** 2 + b ** 2 + c ** 2) ** 0.5
+                if pid == 2 or pid == 5:
+                    dist /= 2 ** 0.5 / 2
+                allCheckerValue.append(dist)
+                
+        return allCheckerValue
