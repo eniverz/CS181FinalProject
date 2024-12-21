@@ -2,6 +2,7 @@ import { clearCycle, drawBoard, drawChecker, drawPosiblePos, getClickedChecker }
 import request, { Response } from "@/libs/request"
 import { RootDispatch, RootState } from "@/redux/model"
 import { Checker, Player } from "@/redux/model/checker"
+import { updateCurrentPlayer } from "@/redux/service/game"
 import { useRequest } from "ahooks"
 import { useEffect, useRef, useCallback, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
@@ -38,11 +39,15 @@ export default () => {
         }
     )
     const move = useRequest(
-        async (start: [number, number], end: [number, number], player_id: number) =>
-            await request.post("/checker/move", null, { params: { start_x: start[0], start_y: start[1], end_x: end[0], end_y: end[1] } }),
+        async (start: [number, number], end: [number, number]) =>
+            (await request.post("/checker/move", null, { params: { start_x: start[0], start_y: start[1], end_x: end[0], end_y: end[1] } })).data,
         {
             manual: true,
-            onError: (err) => console.error(err)
+            onError: (err) => console.error(err),
+            onSuccess: (data: { playerID: Player; isWin: boolean }) => {
+                dispatch(updateCurrentPlayer(data.playerID))
+                if (data.isWin) console.log("Win")
+            }
         }
     )
 
@@ -71,7 +76,7 @@ export default () => {
                         checkers[index].position = [posX, posY]
                         memeDrawChecker(canvas, canvas.width, canvas.height, [checkers[index]])
                     })
-                    move.runAsync(selectedChecker.position, [posX, posY], selectedChecker.player)
+                    move.runAsync(selectedChecker.position, [posX, posY])
                 }
                 // clear
                 memeClearCycle(canvas, canvasConfig, availablePos)

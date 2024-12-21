@@ -18,9 +18,12 @@ const game = createSlice({
         },
         setNumPlayers(state, { payload }: { payload: Game["players"] }) {
             state.players = payload
+        },
+        updateCurrentPlayer(state, { payload }: { payload: typeof initialState.state.currentPlayer }) {
+            state.state.currentPlayer = payload
         }
     }
 })
 
 export default game.reducer
-export const { setType, setNumPlayers } = game.actions
+export const { setType, setNumPlayers, updateCurrentPlayer } = game.actions
