@@ -256,5 +256,6 @@ class GameState:
 
     def moveChecker(self, start_pos, end_pos):
         self.board = self.board.moveChecker(start_pos, end_pos, self.curPID)
+        is_win = self.checkWin()
         self.curPID = (self.curPID + 1) % self.board.player_num
-
+        return is_win
