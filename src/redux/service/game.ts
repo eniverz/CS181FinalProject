@@ -21,9 +21,16 @@ const game = createSlice({
         },
         updateCurrentPlayer(state, { payload }: { payload: typeof initialState.state.currentPlayer }) {
             state.state.currentPlayer = payload
+        },
+        replay(state) {
+            state.state = {
+                checkers: [],
+                currentPlayer: null,
+                step: 0
+            }
         }
     }
 })
 
 export default game.reducer
-export const { setType, setNumPlayers, updateCurrentPlayer } = game.actions
+export const { setType, setNumPlayers, updateCurrentPlayer, replay } = game.actions

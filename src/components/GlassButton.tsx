@@ -31,7 +31,7 @@ export default ({
         ["after:transition-all after:duration-300"]: true,
 
         // Hover states
-        ["hover:scale-105 hover:after:blur-3xl active:scale-100 cursor-pointer"]: !disabled,
+        ["hover:scale-105 hover:after:opacity-50 active:scale-100 cursor-pointer"]: !disabled,
         // Disabled state
         ["opacity-50 hover:cursor-not-allowed grayscale"]: disabled,
 

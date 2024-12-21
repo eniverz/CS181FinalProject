@@ -1,5 +1,5 @@
 import GlassButton from "@/components/GlassButton"
-import request from "@/libs/request"
+import request from "@/lib/request"
 import { RootDispatch } from "@/redux/model"
 import { setNumPlayers, setType } from "@/redux/service/game"
 import { useRequest } from "ahooks"
@@ -21,9 +21,6 @@ export default () => {
         dispatch(setNumPlayers(1))
         await init.runAsync(1)
         navigate("/play")
-    }
-    const multiplePlayer = async () => {
-        setOpen(true)
     }
     const submitMultiplePlayer = async () => {
         dispatch(setType("multi"))
@@ -80,7 +77,7 @@ export default () => {
                     <GlassButton className="text-2xl w-2/3 after:bg-teal-100" onClick={singlePlayer}>
                         Single Player
                     </GlassButton>
-                    <GlassButton className="text-2xl w-2/3 after:bg-teal-100" onClick={multiplePlayer}>
+                    <GlassButton className="text-2xl w-2/3 after:bg-teal-100" onClick={() => setOpen(true)}>
                         Multiple Player
                     </GlassButton>
                     <GlassButton className="text-2xl w-2/3 after:bg-teal-100" onClick={playWithAI}>

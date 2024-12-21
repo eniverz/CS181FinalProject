@@ -1,11 +1,15 @@
-import { clearCycle, drawBoard, drawChecker, drawPosiblePos, getClickedChecker } from "@/libs/draw"
-import request, { Response } from "@/libs/request"
+import GlassButton from "@/components/GlassButton"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { clearCycle, drawBoard, drawChecker, drawPosiblePos, getClickedChecker } from "@/lib/draw"
+import request, { Response } from "@/lib/request"
 import { RootDispatch, RootState } from "@/redux/model"
 import { Checker, Player } from "@/redux/model/checker"
-import { updateCurrentPlayer } from "@/redux/service/game"
+import { replay, updateCurrentPlayer } from "@/redux/service/game"
 import { useRequest } from "ahooks"
 import { useEffect, useRef, useCallback, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
+import { useNavigate } from "react-router"
+import { toast } from "sonner"
 import { useImmer } from "use-immer"
 
 export default () => {
@@ -13,10 +17,14 @@ export default () => {
     const [checkers, setCheckers] = useImmer<Checker[]>([])
     const [selectedChecker, setSelectedChecker] = useState<Checker | null>(null)
     const [availablePos, setAvailablePos] = useState<[number, number][]>([])
+    const [winner, setWinner] = useState<Player | undefined>(undefined)
     const canvasConfig = useSelector((state: RootState) => state.canvas)
     const gameState = useSelector((state: RootState) => state.game)
-    const dispatch = useDispatch<RootDispatch>()
 
+    const dispatch = useDispatch<RootDispatch>()
+    const navigate = useNavigate()
+
+    const init = useRequest(async (player_num: number) => await request.post("/game/init", null, { params: { player_num } }), { manual: true })
     const getCheckers = useRequest(async () => (await request.get(`/checker/all_position/${gameState.players ?? 1}`)) as Response<[number, number, Player][]>, {
         manual: true,
         onSuccess: (data) => {
@@ -46,7 +54,7 @@ export default () => {
             onError: (err) => console.error(err),
             onSuccess: (data: { playerID: Player; isWin: boolean }) => {
                 dispatch(updateCurrentPlayer(data.playerID))
-                if (data.isWin) console.log("Win")
+                setWinner((prev) => (data.isWin ? data.playerID : prev))
             }
         }
     )
@@ -94,6 +102,26 @@ export default () => {
         [availablePos, selectedChecker, checkers]
     )
 
+    const restart = useCallback(async () => {
+        dispatch(replay())
+        setCheckers([])
+        setWinner(undefined)
+        await init.runAsync(gameState.players ?? 1)
+        const checkers = await getCheckers.runAsync()
+        if (!canvasRef.current) {
+            toast.error("Canvas not found")
+            navigate("/")
+            return
+        }
+        memeDrawBorad(canvasRef.current, canvasConfig.width, canvasConfig.height, canvasConfig.board, dispatch)
+        memeDrawChecker(
+            canvasRef.current,
+            canvasConfig.width,
+            canvasConfig.height,
+            checkers.data.map(([x, y, player]) => ({ color: ["red", "blue", "green", "yellow", "purple", "orange"][player], player, position: [x, y] }))
+        )
+    }, [])
+
     // Adjust canvas size and redraw on window resize
     useEffect(() => {
         const canvas = canvasRef.current
@@ -133,6 +161,23 @@ export default () => {
 
     return (
         <div className="w-full h-screen flex justify-center items-center bg-transparent">
+            <Dialog open={winner !== undefined}>
+                <DialogContent showClose={false}>
+                    <DialogHeader>
+                        <DialogTitle>Player {gameState.state.currentPlayer} win!</DialogTitle>
+                        <DialogDescription></DialogDescription>
+                    </DialogHeader>
+                    <div className="flex justify-center">Do you want to play again?</div>
+                    <DialogFooter className="sm:flex-row sm:justify-center sm:items-center sm:space-x-8">
+                        <GlassButton className="bg-teal-300/20 after:bg-teal-300" onClick={() => restart()}>
+                            Re-play
+                        </GlassButton>
+                        <GlassButton className="bg-pink-100/20 after:bg-pink-500/70" onClick={() => window.location.reload()}>
+                            Back to Menu
+                        </GlassButton>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
             <canvas ref={canvasRef} onClick={handleClick} />
         </div>
     )
