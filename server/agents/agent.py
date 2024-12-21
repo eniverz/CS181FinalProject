@@ -13,5 +13,4 @@ class Agent:
     def get_GameState(self):
         return self.gs
 
-    def evaluate(self):
-        
+    def evaluate(self, gameState):
