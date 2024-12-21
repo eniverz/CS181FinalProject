@@ -13,4 +13,8 @@ class Agent:
     def get_GameState(self):
         return self.gs
 
+    def get_next_gs(self):
+        pass
+
     def evaluate(self, gameState):
+        pass
