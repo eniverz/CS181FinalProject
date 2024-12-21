@@ -39,7 +39,7 @@ export default () => {
     )
     const move = useRequest(
         async (start: [number, number], end: [number, number], player_id: number) =>
-            await request.post("/checker/move", null, { params: { start_x: start[0], start_y: start[1], end_x: end[0], end_y: end[1], player_id } }),
+            await request.post("/checker/move", null, { params: { start_x: start[0], start_y: start[1], end_x: end[0], end_y: end[1] } }),
         {
             manual: true,
             onError: (err) => console.error(err)
