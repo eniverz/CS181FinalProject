@@ -5,7 +5,8 @@ use react for frontend UI
 
 - [x] start scene
 - [x] play scene
-- [ ] single player
+- [x] winner
+- [x] single player
 - [ ] multiple player
 - [ ] with AI
 
@@ -18,7 +19,9 @@ use fast API for service
 - [x] fastapi entry point
 - [x] get board
 - [x] move
-- [ ] is win / is loss
+- [x] is win / is loss
+- [x] change player
+- [ ] ai agent
 - [ ] connect
 
 ### Algorithm
