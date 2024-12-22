@@ -17,6 +17,9 @@ class Agent:
         pass
 
     def evaluate(self, gameState):
+        # for pid in range(self.player_num):
+        #     for pos in gameState.board.winstate_pos[pid]:
+        #         mid[pid] 
         targetLine = [[0, 1, -13],[1, 0, -13],[1, -1, -5],[0, 1, -3], [1, 0, -3], [1, -1, 5]]
         allCheckerValue = []
         for pid in range(self.player_num):
@@ -33,3 +36,7 @@ class Agent:
                 allCheckerValue.append(dist)
                 
         return allCheckerValue
+    
+    def step(self):
+        self.gs = self.get_next_gs()
+

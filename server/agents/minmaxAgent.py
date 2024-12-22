@@ -1,5 +1,5 @@
 from game.game import Board, GameState, ADJACENT_GT, MIRROR_GT
-from agent import Agent
+from agents.agent import Agent
 
 class minmaxAgent_multiplayer(Agent):
     def __init__(self, board_size:int, player_num:int, max_depth:int, game_type:int=ADJACENT_GT):
@@ -17,7 +17,7 @@ class minmaxAgent_multiplayer(Agent):
         mn = float('inf')
         curPID = self.get_curPID()
         for next_gs in gs.nextGameStates():
-            res, _ = self.maxLayer(next_gs, depth+1)
+            res, _ = self.minLayer_Multiplayer(next_gs, depth+1)
             if res[curPID] < mn:
                 mn = res[curPID]
                 best_next_gs = next_gs

@@ -1,6 +1,23 @@
 from game.game import Board, GameState, MIRROR_GT, ADJACENT_GT
+from agents.minmaxAgent import minmaxAgent_multiplayer, minmaxAgent_twoplayer
 
-gs = GameState(4, 1, MIRROR_GT)
-gs.board = gs.board.moveChecker((10,3),(10,4),0)
-gs.board = gs.board.moveChecker((11,3),(9,5),0)
-print(gs.board.nextSteps((12,2)))
+
+board_size = 2
+player_num = 1
+game_type = MIRROR_GT
+max_depth = 2
+
+# gs = GameState(board_size, player_num, game_type)
+agent = minmaxAgent_multiplayer(board_size, player_num, max_depth, game_type)
+agent.gs.board.debugPlayerCheckers()
+print(agent.gs.board.winstate_pos)
+
+st = 0
+while not agent.get_GameState().checkWin():
+    agent.step()
+    st += 1
+    agent.get_GameState().board.debugPlayerCheckers()    
+    print(agent.gs.board.winstate_pos)
+    print(agent.evaluate(agent.get_GameState()))
+print(st)
+
