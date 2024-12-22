@@ -17,12 +17,17 @@ class Agent:
         pass
 
     def evaluate(self, gameState):
-        # for pid in range(self.player_num):
-        #     for pos in gameState.board.winstate_pos[pid]:
-        #         mid[pid] 
-        targetLine = [[0, 1, -13],[1, 0, -13],[1, -1, -5],[0, 1, -3], [1, 0, -3], [1, -1, 5]]
+        targetLine = [[0, 1, -(3 * self.board_size + 1)],[1, 0, -(3 * self.board_size + 1)],[1, -1, -(self.board_size + 1)],[0, -1, self.board_size - 1], [-1, 0, self.board_size - 1], [-1, 1, -(self.board_size + 1)]]
+        if self.player_num == 1:
+            playerIDs = [0]
+        elif self.player_num == 2:
+            playerIDs = [0, 3]
+        elif self.player_num == 3:
+            playerIDs = [0, 2, 4]
+        elif self.player_num == 6:
+            playerIDs = [0, 1, 2, 3, 4, 5]
         allCheckerValue = []
-        for pid in range(self.player_num):
+        for pid in playerIDs:
             PlayerCheckers = gameState.board.getPlayerCheckers(pid)
             for checker in PlayerCheckers:
                 checker_x = checker[0]
@@ -30,9 +35,13 @@ class Agent:
                 a = targetLine[pid][0]
                 b = targetLine[pid][1]
                 c = targetLine[pid][2]
-                dist = abs(checker_x * a + checker_y * b + c) / (a ** 2 + b ** 2 + c ** 2) ** 0.5
-                if pid == 2 or pid == 5:
-                    dist /= 2 ** 0.5 / 2
+                judge = checker_x * a + checker_y * b + c
+                dist = 0
+                if judge < 0:
+                    dist = -judge / (a ** 2 + b ** 2) ** 0.5
+                    if pid == 2 or pid == 5:
+                        dist /= 2 ** 0.5 / 2
+                
                 allCheckerValue.append(dist)
                 
         return allCheckerValue
