@@ -1,7 +1,9 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.exceptions import RequestValidationError, ValidationException
-from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 
+from agents.agent import Agent
+from agents.minmaxAgent import minmaxAgent_multiplayer, minmaxAgent_twoplayer
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from game.game import MIRROR_GT, GameState
 from service.utils import HttpStatus, Result
 
@@ -9,6 +11,7 @@ app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 game = GameState(4, 1, MIRROR_GT)
+agent: Optional[Agent] = None
 
 
 @app.get("/")
@@ -17,9 +20,14 @@ def get_root():
 
 
 @app.post("/game/init")
-def init_game(board_size: int = 4, player_num: int = 1):
+def init_game(board_size: int = 4, player_num: int = 1, game_type: GameType = GameType.PLAYER_VS_PLAYER):
     global game
+    global agent
     game = GameState(board_size, player_num, MIRROR_GT)
+    if game_type == GameType.PLAYER_VS_AI:
+        agent = minmaxAgent_twoplayer(board_size, player_num, 3)
+    elif game_type == GameType.AI_VS_AI:
+        agent = minmaxAgent_multiplayer(board_size, player_num, 3)
     return Result.ok()
 
 

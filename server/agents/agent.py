@@ -1,23 +1,31 @@
-from game.game import GameState, ADJACENT_GT, MIRROR_GT
+from game.game import ADJACENT_GT, MIRROR_GT, GameState
+
 
 class Agent:
-    def __init__(self, board_size:int, player_num:int, game_type:int=ADJACENT_GT):
+    def __init__(self, board_size: int, player_num: int, game_type: int = ADJACENT_GT):
         self.gs = GameState(board_size, player_num, game_type)
         self.board_size = board_size
         self.player_num = player_num
         self.game_type = game_type
-    
+
     def get_curPID(self):
         return self.gs.curPID
 
     def get_GameState(self):
         return self.gs
 
-    def get_next_gs(self):
-        pass
+    def get_next_gs(self) -> GameState:
+        raise NotImplementedError("Error: Don't use abstract method. Please implement first")
 
     def evaluate(self, gameState):
-        targetLine = [[0, 1, -(3 * self.board_size + 1)],[1, 0, -(3 * self.board_size + 1)],[1, -1, -(self.board_size + 1)],[0, -1, self.board_size - 1], [-1, 0, self.board_size - 1], [-1, 1, -(self.board_size + 1)]]
+        targetLine = [
+            [0, 1, -(3 * self.board_size + 1)],
+            [1, 0, -(3 * self.board_size + 1)],
+            [1, -1, -(self.board_size + 1)],
+            [0, -1, self.board_size - 1],
+            [-1, 0, self.board_size - 1],
+            [-1, 1, -(self.board_size + 1)],
+        ]
         if self.player_num == 1:
             playerIDs = [0]
         elif self.player_num == 2:
@@ -26,6 +34,8 @@ class Agent:
             playerIDs = [0, 2, 4]
         elif self.player_num == 6:
             playerIDs = [0, 1, 2, 3, 4, 5]
+        else:
+            raise ValueError("Invalid player_num")
         allCheckerValue = []
         for pid in playerIDs:
             PlayerCheckers = gameState.board.getPlayerCheckers(pid)
@@ -38,14 +48,13 @@ class Agent:
                 judge = checker_x * a + checker_y * b + c
                 dist = 0
                 if judge < 0:
-                    dist = -judge / (a ** 2 + b ** 2) ** 0.5
+                    dist = -judge / (a**2 + b**2) ** 0.5
                     if pid == 2 or pid == 5:
-                        dist /= 2 ** 0.5 / 2
-                
+                        dist /= 2**0.5 / 2
+
                 allCheckerValue.append(dist)
-                
+
         return allCheckerValue
-    
+
     def step(self):
         self.gs = self.get_next_gs()
-

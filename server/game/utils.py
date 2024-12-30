@@ -3,6 +3,7 @@ class Node:
         self.value = value
         self.nxt = nxt
 
+
 class Queue:
     def __init__(self):
         self.front = None
@@ -18,7 +19,7 @@ class Queue:
         else:
             self.rear.nxt = new_node
             self.rear = new_node
-        assert(not self.empty())
+        assert not self.empty()
 
     def pop(self):
         if self.empty():
