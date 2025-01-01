@@ -42,6 +42,7 @@ class Agent:
         allCheckerValue = []
         for idx, pid in enumerate(playerIDs):
             playerCheckers = gameState.board.getPlayerCheckers(idx)
+            dist = 0
             for checker in playerCheckers:
                 checker_x = checker[0]
                 checker_y = checker[1]
@@ -49,13 +50,11 @@ class Agent:
                 b = targetLine[pid][1]
                 c = targetLine[pid][2]
                 judge = checker_x * a + checker_y * b + c
-                dist = 0
                 if judge < 0:
                     dist += -judge / (a**2 + b**2) ** 0.5
-                    if pid == 2 or pid == 5:
-                        dist /= 2**0.5 / 2
-
-                allCheckerValue.append(dist)
+            if pid == 2 or pid == 5:
+                dist /= 2**0.5 / 2
+            allCheckerValue.append(dist)
 
         return allCheckerValue
 
