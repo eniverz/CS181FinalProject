@@ -3,6 +3,7 @@ import { lazy } from "react"
 
 const Start = lazy(() => import("@/pages/Start"))
 const Game = lazy(() => import("@/pages/Game"))
+const AIGame = lazy(() => import("@/pages/AIGame"))
 
 export const routes: RouteObject[] = [
     {
@@ -16,5 +17,9 @@ export const routes: RouteObject[] = [
     {
         path: "/play",
         element: <Game />
+    },
+    {
+        path: "/ai",
+        element: <AIGame />
     }
 ]

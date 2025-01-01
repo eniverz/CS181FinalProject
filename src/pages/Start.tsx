@@ -9,10 +9,22 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+const enum GameType {
+    PLAYER_VS_PLAYER = 1,
+    PLAYER_VS_AI = 2,
+    AI_VS_AI = 3
+}
+
 export default () => {
     const navigate = useNavigate()
     const dispatch = useDispatch<RootDispatch>()
-    const init = useRequest(async (player_num: number) => await request.post("/game/init", null, { params: { player_num } }), { manual: true })
+    const init = useRequest(
+        async (player_num: number, game_type: GameType = GameType.PLAYER_VS_PLAYER) =>
+            await request.post("/game/init", null, { params: { player_num, game_type: game_type } }),
+        {
+            manual: true
+        }
+    )
     const [open, setOpen] = useState(false)
     const [playerNum, setPlayerNum] = useState<2 | 3 | 6>(2)
 
@@ -31,14 +43,14 @@ export default () => {
     const playWithAI = async () => {
         dispatch(setType("AI"))
         dispatch(setNumPlayers(2))
-        await init.runAsync(2)
-        navigate("/play")
+        await init.runAsync(2, GameType.PLAYER_VS_AI)
+        navigate("/ai")
     }
     const AIWithAI = async () => {
         dispatch(setType("AI vs AI"))
         dispatch(setNumPlayers(2))
-        await init.runAsync(2)
-        navigate("/play")
+        await init.runAsync(2, GameType.AI_VS_AI)
+        navigate("/ai_vs_ai")
     }
 
     return (

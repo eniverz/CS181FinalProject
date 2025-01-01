@@ -40,9 +40,9 @@ class Agent:
         else:
             raise ValueError("Invalid player_num")
         allCheckerValue = []
-        for pid in playerIDs:
-            PlayerCheckers = gameState.board.getPlayerCheckers(pid)
-            for checker in PlayerCheckers:
+        for idx, pid in enumerate(playerIDs):
+            playerCheckers = gameState.board.getPlayerCheckers(idx)
+            for checker in playerCheckers:
                 checker_x = checker[0]
                 checker_y = checker[1]
                 a = targetLine[pid][0]
