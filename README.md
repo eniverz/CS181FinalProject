@@ -1,5 +1,41 @@
 # Chinese Checker
 
+## Setup
+
+### Frontend
+
+install [nodejs](nodejs.org), or using cli:
+
+```bash
+# ubuntu
+sudo apt install npm
+# arch
+sudo pacman -S npm
+# windows
+winget install -i OpenJS.NodeJS.LTS
+# mac
+brew install npm
+```
+
+run command below:
+
+```bash
+npm install -g pnpm
+pnpm i
+pnpm dev
+```
+
+### Backend
+
+you need install the requirements.txt
+
+```bash
+conda create -n checker python=3.10
+cd server
+pip install -r requirements.txt
+fastapi dev main.py
+```
+
 ## Frontend
 use react for frontend UI
 
