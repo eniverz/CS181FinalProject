@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import Optional, Tuple
 
 from game.utils import Queue
 
@@ -208,10 +209,7 @@ class Board:
         """
         check whether player_id loses by having no available move
         """
-        assert (
-            True
-        ), "This function should not be called, since checking len(nextGameStates)==0 \
-                      when calling nextGameState should be a better approach."
+        assert True, "This function should not be called, since checking len(nextGameStates)==0 when calling nextGameState should be a better approach."
         for pos in self.checkerlist[player_id]:
             if len(self.nextSteps(pos)) > 0:
                 return True
@@ -233,6 +231,7 @@ class GameState:
         self.board = Board(board_size, player_num, game_type)
         self.curPID = 0
         self.game_type = game_type
+        self.movement: Optional[Tuple[Tuple[int, int], Tuple[int, int]]] = None
 
     def nextGameStates(self):
         """
@@ -248,6 +247,7 @@ class GameState:
                 newGameState = GameState(b.N, b.player_num)
                 newGameState.curPID = nxtPID
                 newGameState.board = b.moveChecker(pos, nxtpos, curPID)
+                newGameState.movement = (pos, nxtpos)
                 newstates.append(newGameState)
         return newstates
 
@@ -256,6 +256,7 @@ class GameState:
 
     def moveChecker(self, start_pos, end_pos):
         self.board = self.board.moveChecker(start_pos, end_pos, self.curPID)
+        self.movement = (start_pos, end_pos)
         is_win = self.checkWin()
         self.curPID = (self.curPID + 1) % self.board.player_num
         return is_win

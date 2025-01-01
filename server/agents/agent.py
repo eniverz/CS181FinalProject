@@ -11,6 +11,9 @@ class Agent:
     def get_curPID(self):
         return self.gs.curPID
 
+    def set_GameState(self, gs):
+        self.gs = gs
+
     def get_GameState(self):
         return self.gs
 

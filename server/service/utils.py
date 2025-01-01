@@ -54,3 +54,9 @@ class Result(BaseModel, Generic[T]):
 
     def to_dict(self):
         return {"code": self.code, "msg": self.msg, "data": self.data}
+
+@unique
+class GameType(int, Enum):
+    PLAYER_VS_PLAYER = 1
+    PLAYER_VS_AI = 2
+    AI_VS_AI = 3
