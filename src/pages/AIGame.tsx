@@ -54,8 +54,8 @@ export default () => {
             onError: (err) => console.error(err),
             onSuccess: (data: { playerID: Player; isWin: boolean }) => {
                 dispatch(updateCurrentPlayer(data.playerID))
-                setWinner((prev) => (data.isWin ? data.playerID : prev))
-                agentMove.run()
+                setWinner((prev) => (data.isWin ? (((data.playerID - 1) % (gameState.players ?? 1)) as Player) : prev))
+                if (!data.isWin) agentMove.run()
             }
         }
     )
@@ -67,7 +67,7 @@ export default () => {
             const pid = gameState.state.currentPlayer
             const canvas = canvasRef.current
             if (!canvas || !pid) return
-            const checker: Checker = {position: endPos, player: pid, color: ["red", "blue", "green", "yellow", "purple", "orange"][pid]}
+            const checker: Checker = { position: endPos, player: pid, color: ["red", "blue", "green", "yellow", "purple", "orange"][pid] }
             memeClearCycle(canvas, canvasConfig, startPos)
             memeDrawChecker(canvas, canvasConfig.width, canvasConfig.height, [checker])
         }
