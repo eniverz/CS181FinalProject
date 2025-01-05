@@ -20,7 +20,7 @@ export default () => {
     const dispatch = useDispatch<RootDispatch>()
     const init = useRequest(
         async (player_num: number, game_type: GameType = GameType.PLAYER_VS_PLAYER) =>
-            await request.post("/game/init", null, { params: { player_num, game_type: game_type } }),
+            await request.post("/game/init", null, { params: { player_num, game_type } }),
         {
             manual: true
         }
