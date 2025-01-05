@@ -1,4 +1,5 @@
 from game.game import ADJACENT_GT, MIRROR_GT, GameState
+from math import sqrt
 
 
 class Agent:
@@ -43,6 +44,7 @@ class Agent:
         for idx, pid in enumerate(playerIDs):
             playerCheckers = gameState.board.getPlayerCheckers(idx)
             dist = 0
+            middist = 0
             for checker in playerCheckers:
                 checker_x = checker[0]
                 checker_y = checker[1]
@@ -52,9 +54,23 @@ class Agent:
                 judge = checker_x * a + checker_y * b + c
                 if judge < 0:
                     dist += -judge / (a**2 + b**2) ** 0.5
+                
+                if pid == 0 or pid == 3: # x = -1/2 (y - b_s)
+                    #midLine = [2, 1, -self.board_size]
+                    midX = -0.5 * (checker_y - self.board_size)
+                    middist += abs(midX - checker_x)
+                elif pid == 2 or pid == 5:
+                    #midLine = [1, -1, -2 * self.board_size]
+                    midX = self.board_size + (checker_x + checker_y) / 2
+                    midY = midX - 2 * self.board_size
+                    middist += sqrt((checker_x - midX) ** 2 + (checker_y - midY) ** 2) / 2**0.5
+                elif pid == 1 or pid == 4:
+                    #midLine = [1, 2, -self.board_size]
+                    midY = -0.5 * (checker_x - self.board_size)
+                    middist += abs(midY - checker_y)
             if pid == 2 or pid == 5:
                 dist /= 2**0.5 / 2
-            allCheckerValue.append(dist)
+            allCheckerValue.append(dist + middist * 0.11)
 
         return allCheckerValue
 
