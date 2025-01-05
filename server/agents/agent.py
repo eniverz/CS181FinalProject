@@ -55,9 +55,9 @@ class Agent:
                 if judge < 0:
                     dist += -judge / (a**2 + b**2) ** 0.5
                 
-                if pid == 0 or pid == 3: # x = -1/2 (y - b_s)
-                    #midLine = [2, 1, -self.board_size]
-                    midX = -0.5 * (checker_y - self.board_size)
+                if pid == 0 or pid == 3: # x = -1/2 y + b_s
+                    #midLine = [2, 1, 2 * self.board_size]
+                    midX = -0.5 * checker_y + self.board_size
                     middist += abs(midX - checker_x)
                 elif pid == 2 or pid == 5:
                     #midLine = [1, -1, -2 * self.board_size]
@@ -65,8 +65,8 @@ class Agent:
                     midY = midX - 2 * self.board_size
                     middist += sqrt((checker_x - midX) ** 2 + (checker_y - midY) ** 2) / 2**0.5
                 elif pid == 1 or pid == 4:
-                    #midLine = [1, 2, -self.board_size]
-                    midY = -0.5 * (checker_x - self.board_size)
+                    #midLine = [-0.5, -1, self.board_size]
+                    midY = -0.5 * checker_x + self.board_size
                     middist += abs(midY - checker_y)
             if pid == 2 or pid == 5:
                 dist /= 2**0.5 / 2
