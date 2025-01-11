@@ -1,6 +1,12 @@
 from game.game import ADJACENT_GT, MIRROR_GT, GameState
 from math import sqrt
 
+def MahattanDIS(pos1, pos2):
+    if pos1[0] <= pos2[0] and pos1[1] <= pos2[1]:
+        return pos2[0] - pos1[0] + pos2[1] - pos1[1]
+    if pos1[0] >= pos2[0] and pos1[1] >= pos2[1]:
+        return pos1[0] - pos2[0] + pos1[1] - pos2[1]
+    return max(abs(pos1[0] - pos2[0]), abs(pos1[1] - pos2[1]))
 
 class Agent:
     def __init__(self, board_size: int, player_num: int, game_type: int = ADJACENT_GT):
@@ -15,64 +21,18 @@ class Agent:
     def set_GameState(self, gs):
         self.gs = gs
 
-    def get_GameState(self):
+    def get_GameState(self) -> GameState:
         return self.gs
 
     def get_next_gs(self) -> GameState:
         raise NotImplementedError("Error: Don't use abstract method. Please implement first")
 
-    def evaluate(self, gameState):
-        targetLine = [
-            [0, 1, -(3 * self.board_size + 1)],
-            [1, 0, -(3 * self.board_size + 1)],
-            [1, -1, -(self.board_size + 1)],
-            [0, -1, self.board_size - 1],
-            [-1, 0, self.board_size - 1],
-            [-1, 1, -(self.board_size + 1)],
-        ]
-        if self.player_num == 1:
-            playerIDs = [0]
-        elif self.player_num == 2:
-            playerIDs = [0, 3]
-        elif self.player_num == 3:
-            playerIDs = [0, 2, 4]
-        elif self.player_num == 6:
-            playerIDs = [0, 1, 2, 3, 4, 5]
-        else:
-            raise ValueError("Invalid player_num")
-        allCheckerValue = []
-        for idx, pid in enumerate(playerIDs):
-            playerCheckers = gameState.board.getPlayerCheckers(idx)
-            dist = 0
-            middist = 0
-            for checker in playerCheckers:
-                checker_x = checker[0]
-                checker_y = checker[1]
-                a = targetLine[pid][0]
-                b = targetLine[pid][1]
-                c = targetLine[pid][2]
-                judge = checker_x * a + checker_y * b + c
-                if judge < 0:
-                    dist += -judge / (a**2 + b**2) ** 0.5
-                
-                if pid == 0 or pid == 3: # x = -1/2 y + b_s
-                    #midLine = [2, 1, 2 * self.board_size]
-                    midX = -0.5 * checker_y + self.board_size
-                    middist += abs(midX - checker_x)
-                elif pid == 2 or pid == 5:
-                    #midLine = [1, -1, -2 * self.board_size]
-                    midX = self.board_size + (checker_x + checker_y) / 2
-                    midY = midX - 2 * self.board_size
-                    middist += sqrt((checker_x - midX) ** 2 + (checker_y - midY) ** 2) / 2**0.5
-                elif pid == 1 or pid == 4:
-                    #midLine = [-0.5, -1, self.board_size]
-                    midY = -0.5 * checker_x + self.board_size
-                    middist += abs(midY - checker_y)
-            if pid == 2 or pid == 5:
-                dist /= 2**0.5 / 2
-            allCheckerValue.append(dist + middist * 0.11)
-
-        return allCheckerValue
+    def evaluate(self, gameState:GameState):
+        val = [0] * gameState.player_num
+        for pid in range(self.gs.player_num):
+            for checker in gameState.board.getPlayerCheckers(pid):
+                val[pid] += MahattanDIS(checker, gameState.board.corners[pid])
+        return val
 
     def step(self):
         self.gs = self.get_next_gs()

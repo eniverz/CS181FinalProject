@@ -77,5 +77,5 @@ class minmaxAgent_twoplayer(Agent):
         return mn, best_next_gs
 
     def get_next_gs(self):
-        return self.minLayer_TwoPlayer(gs=self.get_GameState(), alpha=-float("inf"), beta=float("inf"), depth=0, curPID=self.get_curPID())
+        return self.minLayer_TwoPlayer(gs=self.get_GameState(), alpha=-float("inf"), beta=float("inf"), depth=0, curPID=self.get_curPID())[1]
 

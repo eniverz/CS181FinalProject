@@ -29,3 +29,14 @@ class Queue:
         if self.front is None:
             self.rear = None
         return result
+
+EMPTY_BOX = -1
+
+DX = [-1, -1, 0, 0, 1, 1]
+DY = [0, 1, -1, 1, -1, 0]
+DIR = [(DX[i], DY[i]) for i in range(len(DX))]
+
+
+ADJACENT_GT = 0
+MIRROR_GT = 1
+
