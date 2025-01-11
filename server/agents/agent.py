@@ -1,5 +1,4 @@
-from game.game import ADJACENT_GT, MIRROR_GT, GameState
-from math import sqrt
+from game.game import ADJACENT_GT, GameState
 
 def MahattanDIS(pos1, pos2):
     if pos1[0] <= pos2[0] and pos1[1] <= pos2[1]:
