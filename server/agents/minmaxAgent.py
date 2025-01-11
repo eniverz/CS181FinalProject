@@ -79,3 +79,7 @@ class minmaxAgent_twoplayer(Agent):
     def get_next_gs(self):
         return self.minLayer_TwoPlayer(gs=self.get_GameState(), alpha=-float("inf"), beta=float("inf"), depth=0, curPID=self.get_curPID())[1]
 
+def minmaxAgent(board_size: int, player_num: int, max_depth: int, game_type: int = ADJACENT_GT):
+    if player_num != 2:
+        return minmaxAgent_multiplayer(board_size, player_num, max_depth, game_type)
+    return minmaxAgent_twoplayer(board_size, player_num, max_depth, game_type)

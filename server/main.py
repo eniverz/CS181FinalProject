@@ -45,7 +45,7 @@ def get_available_pos(x: int, y: int):
     global game
     if (not game.board.posInBoard((x, y))) or game.board.posEmpty((x, y)):
         raise HTTPException(status_code=HttpStatus.HTTP_400_BAD_REQUEST[0], detail=f"Position ({x}, {y}) is not a player checker")
-    elif not game.board.board[x][y] == game.curPID:
+    elif not game.board.board[x][y] == game.curPID + 1:
         raise HTTPException(status_code=HttpStatus.HTTP_400_BAD_REQUEST[0], detail=f"Position ({x}, {y}) does not belong to player {game.curPID}")
     return Result.ok(data=game.board.nextSteps((x, y)))
 
@@ -59,7 +59,7 @@ def move_checker(start_x: int, start_y: int, end_x: int, end_y: int):
         raise HTTPException(status_code=HttpStatus.HTTP_400_BAD_REQUEST[0], detail=f"Position ({start_x}, {start_y}) is empty")
     if game.board.posNotEmpty((end_x, end_y)):
         raise HTTPException(status_code=HttpStatus.HTTP_400_BAD_REQUEST[0], detail=f"Position ({end_x}, {end_y}) is not empty")
-    if game.board.board[start_x][start_y] != game.curPID:
+    if game.board.board[start_x][start_y] != game.curPID + 1:
         raise HTTPException(status_code=HttpStatus.HTTP_400_BAD_REQUEST[0], detail=f"Position ({start_x}, {start_y}) does not belong to player {game.curPID}")
     is_win = game.moveChecker((start_x, start_y), (end_x, end_y))
     return Result.ok(data={"playerID": game.curPID, "isWin": is_win})

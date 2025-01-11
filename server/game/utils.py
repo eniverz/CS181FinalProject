@@ -30,7 +30,7 @@ class Queue:
             self.rear = None
         return result
 
-EMPTY_BOX = -1
+EMPTY_BOX = 0
 
 DX = [-1, -1, 0, 0, 1, 1]
 DY = [0, 1, -1, 1, -1, 0]

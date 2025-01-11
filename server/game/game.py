@@ -99,7 +99,7 @@ class Board:
 
         for player_id in range(player_num):
             for x, y in self.checkerlist[player_id]:
-                self.board[x][y] = player_id
+                self.board[x][y] = player_id+1
 
     def posInBoard(self, pos):
         """
@@ -135,12 +135,12 @@ class Board:
         """
         assert self.posInBoard(start_pos), f"Start position {start_pos} not in board"
         assert self.posInBoard(end_pos), f"End position {end_pos} not in board"
-        assert self.board[start_pos[0]][start_pos[1]] == player_id, f"Start position does not belong to {player_id}: {start_pos}->{end_pos}"
+        assert self.board[start_pos[0]][start_pos[1]] == player_id+1, f"Start position does not belong to {player_id}: {start_pos}->{end_pos}"
         assert self.board[end_pos[0]][end_pos[1]] == EMPTY_BOX, f"End position is not empty: {start_pos}->{end_pos}"
 
         newBoard = deepcopy(self)
         newBoard.board[start_pos[0]][start_pos[1]] = EMPTY_BOX
-        newBoard.board[end_pos[0]][end_pos[1]] = player_id
+        newBoard.board[end_pos[0]][end_pos[1]] = player_id+1
         newBoard.checkerlist[player_id].remove(start_pos)
         newBoard.checkerlist[player_id].append(end_pos)
         return newBoard
