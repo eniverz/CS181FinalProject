@@ -58,6 +58,7 @@ class Board:
                 pos = (4 * board_size - i, board_size + j)
                 triangle_pos_list[triangle_id].append(pos)
 
+
         if player_num == 1:
             self.checkerlist[0] = deepcopy(triangle_pos_list[0])
             self.winstate_pos[0] = set(triangle_pos_list[3])

@@ -34,10 +34,10 @@ class ValueNN(nn.Module):
 
 class dataCACHE():
     def __init__(self, device, gs_shape):
-        self.curgs = torch.FloatTensor((0, *gs_shape), device=device)
-        self.nextgs = torch.FloatTensor((0, *gs_shape), device=device)
-        self.reward = torch.FloatTensor((0, 1), device=device)
-        self.PID = torch.IntTensor((0, 1), device=device)
+        self.curgs = torch.empty((0, *gs_shape), device=device, dtype=torch.float32)
+        self.nextgs = torch.empty((0, *gs_shape), device=device, dtype=torch.float32)
+        self.reward = torch.empty((0, 1), device=device, dtype=torch.float32)
+        self.PID = torch.empty((0, 1), device=device, dtype=torch.int64)
 
     def size(self):
         return self.curgs.shape[0]
@@ -71,23 +71,33 @@ class ValueModel():
         self.device = next(model.parameters()).device
         self.player_num = player_num
         self.cache = dataCACHE(self.device, gs_shape)
-        self.optimiser = torch.optim.RMSprop(self.model.parameters(), lr=lr)
+        self.gs_shape = gs_shape
+        self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=lr)
 
     def getVal(self, gs:GameState):
-        x = torch.FloatTensor(gs.board.board).to(device=self.device)
-        return self.model(x)
+        self.model.eval()
+        x = torch.FloatTensor(gs.board.board).to(device=self.device).reshape(1, *self.gs_shape)
+        res = self.model(x).squeeze(0)
+        self.model.train()
+        return res.detach().cpu().numpy()
 
     def step(self, batch_size, rep=1):
+        all_loss = 0
+        cnt = 0
         for curgs, nextgs, reward, PIDs in self.cache.getBatch(batch_size, rep):
             curV = self.model(curgs)
             nextV = self.model(nextgs)
             curV = curV.gather(1, PIDs)
             nextV = nextV.gather(1, PIDs)
-            target = reward + self.gamma * nextV
+            target = (reward + self.gamma * nextV).detach()
+            # target = reward + self.gamma * nextV
             loss = self.loss_fn(curV, target)
             self.optimizer.zero_grad()
             loss.backward()
+            all_loss += loss.detach().cpu().item()
+            cnt += 1
             self.optimizer.step()
+        print(f'Loss: {all_loss/cnt}')
 
 
     def store_sample(self, gs:GameState, next_gs: GameState, r:float, pid:int):
@@ -95,3 +105,5 @@ class ValueModel():
         nextgs = torch.FloatTensor(next_gs.board.board).to(device=self.device)
         reward = torch.FloatTensor([r]).to(device=self.device)
         PID = torch.IntTensor([pid]).to(device=self.device)
+        self.cache.insert(curgs.reshape(1, *curgs.shape), nextgs.reshape(1, *nextgs.shape),
+                           reward.reshape(1, *reward.shape), PID.reshape(1, *PID.shape))
