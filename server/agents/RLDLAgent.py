@@ -10,21 +10,23 @@ from agents.valueModel import ValueModel
 
 
 class RLAgent(Agent):
-    def __init__(self, board_size: int, player_num: int, value_model: ValueModel, explore_rate: float, game_type: int = ADJACENT_GT):
+    def __init__(self, board_size: int, player_num: int, value_model: ValueModel, explore_rate: float, minmax_rate: float, game_type: int = ADJACENT_GT):
         super().__init__(board_size, player_num, game_type)
         self.value_model = value_model
         self.explore_rate = explore_rate
-        self.use_minmax = False
-        self.minmaxAgent = minmaxAgent(board_size, player_num, 4, game_type)
+        self.minmax_rate = minmax_rate
+        self.minmaxAgent = minmaxAgent(board_size, player_num, max_depth=2, game_type=game_type)
+        self.store = []
 
     def get_next_gs(self) -> GameState:
         possibleList = self.gs.nextGameStates()
-        if random.random() < self.explore_rate:
+        rs = random.random()
+        if rs < self.explore_rate:
             return random.choice(possibleList)
-        else:
-            if self.use_minmax:
+        elif rs < self.explore_rate + self.minmax_rate:
                 self.minmaxAgent.set_GameState(self.gs)
                 return self.minmaxAgent.get_next_gs()
+        else:
             max_val = -float("inf")
             best_next_gs = []
             for next_gs in possibleList:
@@ -39,13 +41,14 @@ class RLAgent(Agent):
     def train(self, train_steps, batch_size, rep=1):
         step = 0
         while not self.gs.checkWin():
-            print(f'Step {step} starts')
+            # print(f'Step {step} starts')
             next_gs = self.get_next_gs()
             reward = [next_gs.board.checkWin(pid) for pid in range(self.player_num)]
             self.value_model.store_sample(self.gs, next_gs, reward[self.get_curPID()], self.get_curPID())
             self.gs = next_gs
             step += 1
-            print(f'Step {step} finishes with reward={reward} eval={self.minmaxAgent.evaluate(self.gs)}')
+            # print(f'Step {step} finishes with reward={reward} eval={self.minmaxAgent.evaluate(self.gs)}')
             # if step % train_steps == 0:
-            #     self.value_model.step(batch_size)
+            #     self.value_model.step(batch_size, rep)
         self.value_model.step(batch_size, rep)
+        print(f'Finish training with {step} steps')
