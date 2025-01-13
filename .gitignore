@@ -24,3 +24,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Models
+server/models
+server/model2
+server/model_tzh
