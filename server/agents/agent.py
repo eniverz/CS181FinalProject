@@ -1,11 +1,5 @@
 from game.game import ADJACENT_GT, GameState
-
-def MahattanDIS(pos1, pos2):
-    if pos1[0] <= pos2[0] and pos1[1] <= pos2[1]:
-        return pos2[0] - pos1[0] + pos2[1] - pos1[1]
-    if pos1[0] >= pos2[0] and pos1[1] >= pos2[1]:
-        return pos1[0] - pos2[0] + pos1[1] - pos2[1]
-    return max(abs(pos1[0] - pos2[0]), abs(pos1[1] - pos2[1]))
+from game.utils import MahattanDIS
 
 class Agent:
     def __init__(self, board_size: int, player_num: int, game_type: int = ADJACENT_GT):

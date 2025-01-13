@@ -40,3 +40,18 @@ DIR = [(DX[i], DY[i]) for i in range(len(DX))]
 ADJACENT_GT = 0
 MIRROR_GT = 1
 
+
+def MahattanDIS(pos1, pos2):
+    if pos1[0] <= pos2[0] and pos1[1] <= pos2[1]:
+        return pos2[0] - pos1[0] + pos2[1] - pos1[1]
+    if pos1[0] >= pos2[0] and pos1[1] >= pos2[1]:
+        return pos1[0] - pos2[0] + pos1[1] - pos2[1]
+    return max(abs(pos1[0] - pos2[0]), abs(pos1[1] - pos2[1]))
+
+def EuclideanPos(pos):
+    return [pos[0]+0.5*pos[1], (3**0.5)/2*pos[1]]
+
+def EuclideanDIS(pos1, pos2):
+    epos1 = EuclideanPos(pos1)
+    epos2 = EuclideanPos(pos2)
+    return ((epos1[0]-epos2[0])**2+(epos1[1]-epos2[1])**2)**0.5

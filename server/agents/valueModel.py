@@ -82,8 +82,10 @@ class ValueModel():
         return res.detach().cpu().numpy()
 
     def step(self, batch_size, rep=1):
-        all_loss = 0
+        # all_loss = 0
         cnt = 0
+        rep = 10000000
+        batch_size = self.cache.size()
         for curgs, nextgs, reward, PIDs in self.cache.getBatch(batch_size, rep):
             curV = self.model(curgs)
             nextV = self.model(nextgs)
@@ -94,10 +96,12 @@ class ValueModel():
             loss = self.loss_fn(curV, target)
             self.optimizer.zero_grad()
             loss.backward()
-            all_loss += loss.detach().cpu().item()
+            if loss <= 1e-5:break
+            # all_loss += loss.detach().cpu().item()
             cnt += 1
             self.optimizer.step()
-        print(f'Loss: {all_loss/cnt}')
+            print(loss)
+        # print(f'Loss: {all_loss/cnt}')
 
 
     def store_sample(self, gs:GameState, next_gs: GameState, r:float, pid:int):
