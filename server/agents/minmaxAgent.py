@@ -40,9 +40,8 @@ class minmaxAgent_twoplayer(Agent):
         the smaller, the better
         """
         res = self.evaluate(gs)
-        oppPID = 1 - curPID
-        # return res[curPID] - res[oppPID]
-        return res[curPID]
+        return res[0] - res[1]
+        # return res[curPID]
 
     def maxLayer_TwoPlayer(self, gs: GameState, alpha, beta, depth, curPID):
         if depth == self.max_depth or gs.checkWin():
@@ -77,7 +76,9 @@ class minmaxAgent_twoplayer(Agent):
         return mn, best_next_gs
 
     def get_next_gs(self):
-        return self.minLayer_TwoPlayer(gs=self.get_GameState(), alpha=-float("inf"), beta=float("inf"), depth=0, curPID=self.get_curPID())[1]
+        curPID = self.get_curPID()
+        return self.minLayer_TwoPlayer(gs=self.get_GameState(), alpha=-float("inf"), beta=float("inf"), depth=0, curPID=curPID)[1] if curPID == 0 \
+            else self.maxLayer_TwoPlayer(gs=self.get_GameState(), alpha=-float("inf"), beta=float("inf"), depth=0, curPID=curPID)[1]
 
 def minmaxAgent(board_size: int, player_num: int, max_depth: int, game_type: int = ADJACENT_GT):
     if player_num != 2:

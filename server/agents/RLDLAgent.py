@@ -30,7 +30,8 @@ class RLAgent(Agent):
             max_val = -float("inf")
             best_next_gs = []
             for next_gs in possibleList:
-                value = self.value_model.getVal(next_gs)[self.get_curPID()]
+                value = self.value_model.getVal(next_gs)
+                value = value[self.get_curPID()] - value[1-self.get_curPID()]
                 if value > max_val:
                     best_next_gs = [next_gs]
                     max_val = value
@@ -40,15 +41,17 @@ class RLAgent(Agent):
 
     def train(self, train_steps, batch_size, rep=1):
         step = 0
-        while not self.gs.checkWin():
+        while not self.gs.board.checkWin(0) and not self.gs.board.checkWin(1):
             # print(f'Step {step} starts')
             next_gs = self.get_next_gs()
-            reward = [next_gs.board.checkWin(pid) for pid in range(self.player_num)]
+            # reward = [next_gs.board.checkWin(pid)*2-1 for pid in range(self.player_num)]
+            reward = [int(next_gs.board.checkWin(pid)) for pid in range(self.player_num)]
             self.value_model.store_sample(self.gs, next_gs, reward[self.get_curPID()], self.get_curPID())
             self.gs = next_gs
             step += 1
-            # print(f'Step {step} finishes with reward={reward} eval={self.minmaxAgent.evaluate(self.gs)}')
+            print(f'Step {step} finishes with reward={reward} eval={self.minmaxAgent.evaluate(self.gs)}')
             # if step % train_steps == 0:
             #     self.value_model.step(batch_size, rep)
+        # return
         self.value_model.step(batch_size, rep)
         print(f'Finish training with {step} steps')

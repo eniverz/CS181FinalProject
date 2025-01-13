@@ -101,11 +101,18 @@ class Board:
         for player_id in range(player_num):
             for x, y in self.checkerlist[player_id]:
                 self.board[x][y] = player_id+1
+        self.triangle_pos_list = triangle_pos_list
 
     def posInBoard(self, pos):
         """
         check if pos is in the board
         """
+        # chop the board for 1 or 2 players
+        if self.player_num <= 2:
+            if pos in self.triangle_pos_list[1] or pos in self.triangle_pos_list[2] \
+            or pos in self.triangle_pos_list[4] or pos in self.triangle_pos_list[5]:
+                return False
+
         # pos in upside-triangle
         if pos[1] >= self.N and pos[0] >= self.N and pos[0] + pos[1] <= 5 * self.N:
             return True
@@ -258,6 +265,18 @@ class GameState:
 
     def checkWin(self):
         return self.board.checkWin(self.curPID)
+
+    def checkEnd(self):
+        for pid in range(self.player_num):
+            if self.board.checkWin(pid):
+                return True
+        return False
+
+    def getwinner(self):
+        for pid in range(self.player_num):
+            if self.board.checkWin(pid):
+                return pid
+        return -1
 
     def moveChecker(self, start_pos, end_pos):
         self.board = self.board.moveChecker(start_pos, end_pos, self.curPID)
