@@ -25,7 +25,13 @@ dist-ssr
 *.sln
 *.sw?
 
+<<<<<<< HEAD
 # Models
 server/models
 server/model2
 server/model_tzh
+=======
+**/models/
+**/model2/
+**/model_tzh/
+>>>>>>> 2c2d795d4df63006e5471e1372714fdbfe6d7d07
