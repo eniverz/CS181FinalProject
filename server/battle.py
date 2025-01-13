@@ -86,7 +86,6 @@ def battle(board_size, agent1, name1, agent2, name2, battle_name):
             agent1.set_GameState(gs)
             gs = agent1.get_next_gs()
         step += 1
-<<<<<<< HEAD
         
     print(f'{name2} play first. {name2 if gs.getwinner()==0 else name1} wins after {step}steps.')
 
@@ -96,13 +95,3 @@ def battle(board_size, agent1, name1, agent2, name2, battle_name):
 battle(board_size, agent_FA, "trainedFA", agent_mm, "base", "TRAINED vs base")
 # battle(board_size, agent_FA_ori, "oriFA", agent_mm, "base", "ORI vs base")
 battle(board_size, agent_FA, "trained", agent_FA_ori, "ori", "TRAINED vs ORI")
-=======
-    print(f'{name2} play first. {name2 if gs.getwinner()==0 else name1} wins after {step}steps.')
-
-
-battle(board_size, agent_FA, "trainedFA", agent_mm4, "base-hard", "TRAINED vs base-hard")
-battle(board_size, agent_FA, "oriFA", agent_mm4, "base-hard", "ORI vs base-hard")
-# battle(board_size, agent_FA, "trainedFA", agent_mm, "base", "TRAINED vs base")
-# battle(board_size, agent_FA_ori, "oriFA", agent_mm, "base", "ORI vs base")
-# battle(board_size, agent_FA, "trained", agent_FA_ori, "ori", "TRAINED vs ORI")
->>>>>>> 2c2d795d4df63006e5471e1372714fdbfe6d7d07

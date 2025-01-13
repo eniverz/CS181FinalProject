@@ -9,7 +9,7 @@ from agents.valueModel import ValueModel
 # R(reward)
 
 
-class RLAgent(Agent):
+class RLAgent_DLvalue(Agent):
     def __init__(self, board_size: int, player_num: int, value_model: ValueModel, explore_rate: float, minmax_rate: float, game_type: int = ADJACENT_GT):
         super().__init__(board_size, player_num, game_type)
         self.value_model = value_model
@@ -46,7 +46,7 @@ class RLAgent(Agent):
             next_gs = self.get_next_gs()
             # reward = [next_gs.board.checkWin(pid)*2-1 for pid in range(self.player_num)]
             reward = [int(next_gs.board.checkWin(pid)) for pid in range(self.player_num)]
-            self.value_model.store_sample(self.gs, next_gs, reward[self.get_curPID()], self.get_curPID())
+            self.value_model.store_sample(self.gs, next_gs, reward)
             self.gs = next_gs
             step += 1
             print(f'Step {step} finishes with reward={reward} eval={self.minmaxAgent.evaluate(self.gs)}')
@@ -55,3 +55,5 @@ class RLAgent(Agent):
         # return
         self.value_model.step(batch_size, rep)
         print(f'Finish training with {step} steps')
+
+
