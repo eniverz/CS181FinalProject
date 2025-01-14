@@ -2,6 +2,8 @@ import torch
 from torch import nn
 from game.game import GameState
 import random
+from torch.optim.lr_scheduler import LambdaLR
+from copy import deepcopy
 
 class ValueNN(nn.Module):
     def __init__(self, gs_shape, player_num):
@@ -84,6 +86,19 @@ class dataCACHE():
     #     self.PID = torch.cat((self.PID, PID))
 
 class ValueModel():
+
+    def reset_scheduler(self, lr):
+        def lr_lambda(epoch):
+            start_lr = lr
+            end_lr = lr/10
+            # print(epoch, start_lr, end_lr, end_lr + (start_lr - end_lr) * (1 - epoch / 10000))
+            if epoch < 10000:
+                return end_lr + (start_lr - end_lr) * (1 - epoch / 10000)
+            else:
+                return end_lr
+        self.scheduler = LambdaLR(self.optimizer, lr_lambda=lr_lambda)
+
+
     def __init__(self, gamma, model, gs_shape, player_num, lr):
         self.gamma = gamma
         self.loss_fn = nn.MSELoss()
@@ -92,7 +107,9 @@ class ValueModel():
         self.player_num = player_num
         self.cache = dataCACHE(self.device, gs_shape)
         self.gs_shape = gs_shape
+        self.lr = lr
         self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=lr)
+        # self.reset_scheduler(self.lr)
 
     def getVal(self, gs:GameState):
         self.model.eval()
@@ -102,13 +119,17 @@ class ValueModel():
         return res.detach().cpu().numpy()
 
     def step(self, batch_size, rep=1):
-        # all_loss = 0
-        cnt = 0
-        # rep = 10000000
+        all_loss = 0
+        # cnt = 0
+        rep = 10000000
+        pre_loss = float('inf')
+        # self.reset_scheduler(self.lr)
         batch_size = self.cache.size()
-        for curgs, nextgs, reward, PIDs in self.cache.getBatch(batch_size, random=True):
+        # for stepid,(curgs, nextgs, reward) in enumerate(self.cache.getBatch(batch_size, random=True)):
+        old_model= deepcopy(self.model)
+        for stepid,(curgs, nextgs, reward) in enumerate(self.cache.getBatch(batch_size, rep=rep)):
             curV = self.model(curgs)
-            nextV = self.model(nextgs)
+            nextV = old_model(nextgs)
             # curV = curV.gather(1, PIDs)
             # nextV = nextV.gather(1, PIDs)
             target = (reward + self.gamma * nextV).detach()
@@ -116,11 +137,20 @@ class ValueModel():
             loss = self.loss_fn(curV, target)
             self.optimizer.zero_grad()
             loss.backward()
-            if loss <= 1e-5:break
-            # all_loss += loss.detach().cpu().item()
+            if loss <= 1e-4:break
+            all_loss += loss.detach().cpu().item()
             # cnt += 1
             self.optimizer.step()
-            print(loss)
+            # self.scheduler.step()
+            if stepid % 1000 == 999:
+                # print(f'loss={loss} lr={self.scheduler.get_last_lr()[0]}')
+                print(f'loss={all_loss/1000} lr={self.optimizer.param_groups[0]["lr"]}')
+                if abs(pre_loss - all_loss) <= 5e-5 or all_loss > pre_loss:
+                    break
+                pre_loss = all_loss
+                all_loss = 0
+            if stepid > 10000:break
+
         # print(f'Loss: {all_loss/cnt}')
 
 

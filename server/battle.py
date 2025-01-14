@@ -63,35 +63,55 @@ agent_FA_ori = minmaxAgent_twoplayer_FA(board_size, max_depth, w_ori)
 agent_mm = minmaxAgent_twoplayer(board_size, 2, max_depth)
 agent_mm4 = minmaxAgent_twoplayer(board_size, 2, max_depth=4)
 
+from agents.valueModel import ValueNN, ValueModel
+from agents.RLDLAgent import RLAgent_DLvalue
+import torch
+gs_shape = (board_size*4+1, board_size*4+1)
+nn = ValueNN(gs_shape, 2)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+nn.to(device)
+# nn.load_state_dict(torch.load('./models/value_model_minmax100.pt'))
+# nn.load_state_dict(torch.load('./models/value_model100.pt'))
+# nn.load_state_dict(torch.load('./model2/value_model_minmax2_noexplore80.pt'))
+nn.load_state_dict(torch.load('./models/scratch30.pt'))
+
+
+value_model = ValueModel(gamma=0.95, model=nn, gs_shape=gs_shape, player_num=2, lr=0.001)
+
+rlagent = RLAgent_DLvalue(board_size, 2, value_model, 0, 0)
+
 def battle(board_size, agent1, name1, agent2, name2, battle_name):
     print(battle_name)
+    # gs = GameState(board_size, 2)
+    # step = 0
+    # while not gs.checkEnd():
+    #     if gs.curPID == 0:
+    #         agent1.set_GameState(gs)
+    #         gs = agent1.get_next_gs()
+    #     else:
+    #         agent2.set_GameState(gs)
+    #         gs = agent2.get_next_gs()
+    #     step += 1
+    #     print(step)
+    # print(f'{name1} play first. {name1 if gs.getwinner()==0 else name2} wins after {step}steps.')
     gs = GameState(board_size, 2)
     step = 0
     while not gs.checkEnd():
         if gs.curPID == 0:
-            agent1.set_GameState(gs)
-            gs = agent1.get_next_gs()
-        else:
-            agent2.set_GameState(gs)
-            gs = agent2.get_next_gs()
-        step += 1
-    print(f'{name1} play first. {name1 if gs.getwinner()==0 else name2} wins after {step}steps.')
-    gs = GameState(board_size, 2)
-    step = 0
-    while not gs.checkEnd():
-        if gs.curPID == 0:
             agent2.set_GameState(gs)
             gs = agent2.get_next_gs()
         else:
             agent1.set_GameState(gs)
             gs = agent1.get_next_gs()
+        print(agent2.evaluate(gs))
         step += 1
-        
+        print(step)    
     print(f'{name2} play first. {name2 if gs.getwinner()==0 else name1} wins after {step}steps.')
 
 
 # battle(board_size, agent_FA, "trainedFA", agent_mm4, "base-hard", "TRAINED vs base-hard")
 # battle(board_size, agent_FA, "oriFA", agent_mm4, "base-hard", "ORI vs base-hard")
-battle(board_size, agent_FA, "trainedFA", agent_mm, "base", "TRAINED vs base")
+# battle(board_size, agent_FA, "trainedFA", agent_mm, "base", "TRAINED vs base")
 # battle(board_size, agent_FA_ori, "oriFA", agent_mm, "base", "ORI vs base")
-battle(board_size, agent_FA, "trained", agent_FA_ori, "ori", "TRAINED vs ORI")
+# battle(board_size, agent_FA, "trained", agent_FA_ori, "ori", "TRAINED vs ORI")
+battle(board_size, rlagent, "rl agent", agent_mm, "ori", "rl vs ori")

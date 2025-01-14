@@ -50,9 +50,13 @@ class RLAgent_DLvalue(Agent):
             self.gs = next_gs
             step += 1
             print(f'Step {step} finishes with reward={reward} eval={self.minmaxAgent.evaluate(self.gs)}')
+            if step > 200:
+                self.explore_rate = 0
+                self.minmax_rate = 1
             # if step % train_steps == 0:
             #     self.value_model.step(batch_size, rep)
         # return
+        batch_size = self.value_model.cache.size()
         self.value_model.step(batch_size, rep)
         print(f'Finish training with {step} steps')
 
