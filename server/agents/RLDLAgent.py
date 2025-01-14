@@ -16,7 +16,6 @@ class RLAgent_DLvalue(Agent):
         self.explore_rate = explore_rate
         self.minmax_rate = minmax_rate
         self.minmaxAgent = minmaxAgent(board_size, player_num, max_depth=2, game_type=game_type)
-        self.store = []
 
     def get_next_gs(self) -> GameState:
         possibleList = self.gs.nextGameStates()
@@ -59,5 +58,4 @@ class RLAgent_DLvalue(Agent):
         batch_size = self.value_model.cache.size()
         self.value_model.step(batch_size, rep)
         print(f'Finish training with {step} steps')
-
 

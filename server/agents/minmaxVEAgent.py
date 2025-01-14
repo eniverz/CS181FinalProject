@@ -21,7 +21,7 @@ def calculateF(gs:GameState, pid):
 
     # f = 0
     # for checker in gs.board.getPlayerCheckers(pid):
-    #     f += MahattanDIS(checker, gs.board.corners[pid])
+    #     f += MahattanDIS(checker, gs.board.corners[pid])**2
     # Flist.append(f)
     f = 0
     for checker in gs.board.getPlayerCheckers(pid):
