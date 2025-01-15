@@ -20,29 +20,38 @@ export default () => {
     const navigate = useNavigate()
     const dispatch = useDispatch<RootDispatch>()
     const init = useRequest(
-        async (player_num: number, game_type: GameType = GameType.PLAYER_VS_PLAYER, board_size: number = 4): Promise<[number, number][]> =>
-            (await request.post("/game/init", null, { params: { player_num, game_type, board_size } })).data,
+        async (
+            player_num: number,
+            game_type: GameType = GameType.PLAYER_VS_PLAYER,
+            board_size: number = 4,
+            agent_type = 1,
+            agent2_type = 1
+        ): Promise<[number, number][]> => (await request.post("/game/init", null, { params: { player_num, game_type, board_size, agent_type, agent2_type } })).data,
         {
             manual: true,
             onSuccess: (data: [number, number][]) => {
-                console.log(data)
                 dispatch(setBoardPos(data))
             }
         }
     )
     const [open, setOpen] = useState(false)
     const [open2, setOpen2] = useState(false)
+    const [open3, setOpen3] = useState(false)
     const [playerNum, setPlayerNum] = useState<2 | 3 | 6>(2)
+    const [agentType, setAgentType] = useState<1 | 2 | 3 | 4 | 5 | 6>(1)
+    const [agent2Type, setAgent2Type] = useState<1 | 2 | 3 | 4 | 5 | 6>(1)
 
     const singlePlayer = async () => {
         dispatch(setType("single"))
         dispatch(setNumPlayers(1))
+        dispatch(setBoardSize(4 * 4 + 1))
         await init.runAsync(1)
         navigate("/play")
     }
     const submitMultiplePlayer = async () => {
         dispatch(setType("multi"))
         dispatch(setNumPlayers(playerNum))
+        dispatch(setBoardSize(4 * 4 + 1))
         await init.runAsync(playerNum)
         navigate("/play")
     }
@@ -50,14 +59,14 @@ export default () => {
         dispatch(setType("AI"))
         dispatch(setNumPlayers(2))
         dispatch(setBoardSize(3 * 4 + 1))
-        await init.runAsync(2, GameType.PLAYER_VS_AI, 3)
+        await init.runAsync(2, GameType.PLAYER_VS_AI, 3, agentType)
         navigate("/ai")
     }
     const AIWithAI = async () => {
         dispatch(setType("AI vs AI"))
         dispatch(setNumPlayers(2))
         dispatch(setBoardSize(3 * 4 + 1))
-        await init.runAsync(2, GameType.AI_VS_AI, 3)
+        await init.runAsync(2, GameType.AI_VS_AI, 3, agentType, agent2Type)
         navigate("/ai_vs_ai")
     }
 
@@ -69,19 +78,20 @@ export default () => {
                         <DialogTitle>Number of Player</DialogTitle>
                         <DialogDescription>choose how many player you want to play with</DialogDescription>
                     </DialogHeader>
-                    <Select defaultValue="2" onValueChange={(val: string) => setPlayerNum(parseInt(val) as 2 | 3 | 6)}>
+                    <Select defaultValue="2" onValueChange={(val: string) => setAgentType(parseInt(val) as 1 | 2 | 3 | 4 | 5 | 6)}>
                         <SelectTrigger className="w-4/5">
                             <SelectValue placeholder="AI Agent Type" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="2">Minmax</SelectItem>
-                            <SelectItem value="3">Deep Learning</SelectItem>
-                            <SelectItem value="6">Reinforcement Learning</SelectItem>
-                            <SelectItem value="8">Monte Carlo Tree Search</SelectItem>
+                            <SelectItem value="1">Minmax</SelectItem>
+                            <SelectItem value="2">Minmax with Function Approximate</SelectItem>
+                            <SelectItem value="3">DVI</SelectItem>
+                            <SelectItem value="4">Greedy</SelectItem>
+                            <SelectItem value="5">Monte Carlo Tree Search</SelectItem>
                         </SelectContent>
                     </Select>
                     <DialogFooter>
-                        <GlassButton className="text-lg w-1/6 after:bg-red-500 bg-red-500/20" onClick={() => setOpen(false)}>
+                        <GlassButton className="text-lg w-1/6 after:bg-red-500 bg-red-500/20" onClick={() => setOpen2(false)}>
                             cancel
                         </GlassButton>
                         <GlassButton className="text-lg w-1/6 after:bg-teal-300 bg-teal-300/20" onClick={playWithAI}>
