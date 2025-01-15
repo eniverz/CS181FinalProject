@@ -10,14 +10,22 @@ vm = dviVM_V1(board_size, input_shape, 2).to(device=device)
 vmodel = dviValueModel(board_size, input_shape, vm)
 
 
-for iter in range(1000):
-    explore_rate = 0 if iter>500 else 0.4*(1-iter/500)
-    dviagent = DVIAgent(board_size, 2, vmodel, explore_rate=explore_rate, device=device)
-    step = 0
-    while not dviagent.gs.checkEnd():
-        step += 1
-        dviagent.step()
-    dviagent.train()
-    print(f'Iter {iter} ends after {step} steps.')
-    if iter % 10 == 9:
-        torch.save(vm.state_dict(), f"models/dvi/v1_iter{iter+1}.pt")
+for iter in range(500):
+    # explore_rate = 0 if iter>700 else 0.5*(1-iter/700)
+    explore_rate = 0.4
+    fail = True
+    while fail:
+        fail = False
+        dviagent = DVIAgent(board_size, 2, vmodel, explore_rate=explore_rate, device=device)
+        step = 0
+        while not dviagent.gs.checkEnd():
+            step += 1
+            dviagent.step()
+            if step > 200:
+                fail = True
+                break
+        if not fail:
+            dviagent.train()
+            print(f'Iter {iter} ends after {step} steps.')
+            if iter % 10 == 9:
+                torch.save(vm.state_dict(), f"models/dvi2/v1_iter{iter+1}.pt")

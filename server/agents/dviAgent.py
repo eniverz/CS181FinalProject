@@ -53,10 +53,10 @@ class DVIAgent(Agent):
         self.vmodel = vmodel
         self.explore_rate = explore_rate
         self.gamma = gamma
-        self.record_input = torch.empty([0, 3, 2*board_size+1, 2*board_size+1], dtype=torch.float32)
-        self.record_V = torch.empty([0, 1], dtype=torch.float32)
-        self.record_PID = torch.empty([0, 1], dtype=torch.long)
         self.device = device
+        self.record_input = torch.empty([0, 3, 2*board_size+1, 2*board_size+1], dtype=torch.float32).to(device=self.device)
+        self.record_V = torch.empty([0, 1], dtype=torch.float32).to(device=self.device)
+        self.record_PID = torch.empty([0, 1], dtype=torch.long).to(device=self.device)
 
     def record(self, gs:GameState, V):
         cur_record_input = gs_to_input(gs, self.board_size).to(device=self.device)
@@ -91,3 +91,16 @@ class DVIAgent(Agent):
     
     def train(self):
         self.vmodel.train(self.record_input, self.record_V, self.record_PID)
+
+def create_dviagent(board_size, device, path=None, agent_type='v1'):
+    if agent_type not in ['v1']:
+        return None
+    if agent_type == 'v1':
+        from agents.dviModel import dviValueModel,dviVM_V1
+        input_shape = (board_size*2+1,  board_size*2+1)
+        vm = dviVM_V1(board_size, input_shape, 2).to(device=device)
+        if path is not None:
+            vm.load_state_dict(torch.load(path,map_location=device))
+        vmodel = dviValueModel(board_size, input_shape, vm)
+        agent_dvi = DVIAgent(board_size, 2, vmodel, explore_rate=0, device=device)
+        return agent_dvi

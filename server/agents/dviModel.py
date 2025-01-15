@@ -76,20 +76,15 @@ class dviValueModel():
         gamma = (end_lr / start_lr) ** (1 / max_epochs)
         scheduler = ExponentialLR(optimizer, gamma=gamma)
         loss_cache_size = 20
-        prelosses = [1e2 for _ in range(loss_cache_size)]
-        preloss = 1e2
         for epoch in range(max_epochs):
             outputs = self.model(record_input)
             targets = record_V
             outputs = outputs.gather(1, record_PID)
             loss = criterion(outputs, targets)
-            if loss < 1e-2:break
+            if loss < 1e-3:break
             optimizer.zero_grad()
             loss.backward()
-            preloss = preloss - prelosses[0]/loss_cache_size + loss.detach()/loss_cache_size
-            prelosses = prelosses[1:] + [loss.detach()]
-            print(loss, preloss)
-            # if loss > preloss:
-            #     break
+            if epoch%10==9:
+                print(loss)
             optimizer.step()
             scheduler.step()

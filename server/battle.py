@@ -3,7 +3,7 @@ from agents.minmaxVEAgent import minmaxAgent_twoplayer_FA
 from agents.minmaxAgent import minmaxAgent_twoplayer
 import torch
 from game.game import GameState
-from agents.dviAgent import GreedyAgent, EmptyModel, DVIAgent
+from agents.dviAgent import GreedyAgent, EmptyModel, DVIAgent, create_dviagent
 from agents.dviModel import dviValueModel, dviVM_V1
 
 # w = np.array([1.06,0.47,-1.24]) # 63/70  -> FA first,FA wins 63steps/mm first,FA wins 70steps
@@ -61,7 +61,6 @@ w_ori = np.array([0.2,0.5,0.8]) # 67/70
 
 board_size = 3
 max_depth = 2
-input_shape = (board_size*2+1,  board_size*2+1)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -72,11 +71,6 @@ agent_mm4 = minmaxAgent_twoplayer(board_size, 2, max_depth=4)
 agent_greedy = GreedyAgent(board_size, 2)
 agent_empty_dvi = DVIAgent(board_size, 2, EmptyModel(), device=device)
 
-
-vm = dviVM_V1(board_size, input_shape, 2).to(device=device)
-vm.load_state_dict(torch.load('models/dvi/v1_69.pt'))
-vmodel = dviValueModel(board_size, input_shape, vm)
-agent_dvi = DVIAgent(board_size, 2, vmodel, explore_rate=0, device=device)
 
 # from agents.valueModel import ValueNN, ValueModel
 # from agents.RLDLAgent import RLAgent_DLvalue
@@ -110,9 +104,13 @@ def battle(board_size, agent1, name1, agent2, name2, battle_name):
         if step > 200:
             draw = True
             break
+    res1 = [-1,-1]
     if not draw:
-        print(f'{name1} play first. {name1 if gs.getwinner()==0 else name2} wins after {step}steps.')
-    else:print(f'{name2} play first. Draw.')
+        winner = gs.getwinner()==1
+        res1[0] = winner
+        res1[1] = step
+        print(f'{name1} play first. {name2 if winner==1 else name1} wins after {step}steps.')
+    else:print(f'{name1} play first. Draw.')
     gs = GameState(board_size, 2)
     step = 0
     draw = False
@@ -130,11 +128,15 @@ def battle(board_size, agent1, name1, agent2, name2, battle_name):
             break
         # print(step)    
 
-    # print(agent2.record_input)
-    # print(agent2.record_V)
+    res2 = [-1,-1]
+
     if not draw:
-        print(f'{name2} play first. {name2 if gs.getwinner()==0 else name1} wins after {step}steps.')
+        winner = gs.getwinner()==0
+        res2[0] = winner
+        res2[1] = step
+        print(f'{name2} play first. {name2 if winner==1 else name1} wins after {step}steps.')
     else:print(f'{name2} play first. Draw.')
+    return res1,res2
 
 
 # battle(board_size, agent_FA, "trainedFA", agent_mm4, "base-hard", "TRAINED vs base-hard")
@@ -144,5 +146,48 @@ def battle(board_size, agent1, name1, agent2, name2, battle_name):
 # battle(board_size, agent_FA, "trained", agent_FA_ori, "ori", "TRAINED vs ORI")
 # battle(board_size, rlagent, "rl agent", agent_mm, "ori", "rl vs ori")
 # battle(board_size, agent_greedy, "greedy", agent_mm, "base", "greedy vs base")
-while True:
-    battle(board_size, agent_greedy, "greedy", agent_dvi, "dvi", "greedy vs dvi")
+
+
+paths = ['models/dvi/v1_iter50.pt','models/dvi/v1_iter100.pt','models/dvi/v1_iter150.pt','models/dvi/v1_iter200.pt','models/dvi/v1_iter250.pt',
+        'models/dvi/v1_iter300.pt','models/dvi/v1_iter350.pt','models/dvi/v1_iter400.pt','models/dvi/v1_iter450.pt','models/dvi/v1_iter500.pt',
+        'models/dvi/v1_iter550.pt','models/dvi/v1_iter600.pt','models/dvi/v1_iter650.pt','models/dvi/v1_iter700.pt']
+
+agent_dvi = create_dviagent(board_size, device, paths[4], 'v1')
+wincnt = [0,0]
+winstep = [0,0]
+losecnt = [0,0]
+losestep = [0,0]
+
+
+gamecnt = 0
+allgamecnt = 100
+winsteplist = [[],[]]
+losesteplist = [[],[]]
+while gamecnt < allgamecnt:
+    res1,res2 = battle(board_size, agent_dvi, "dvi", agent_greedy, "greedy", f"{paths[4]} vs greedy")
+    if res1[0] == 0:
+        wincnt[0] += 1
+        winstep[0] += res1[1]
+        winsteplist[0].append(res1[1])
+    elif res1[0] == 1:
+        losecnt[0] += 1
+        losestep[0] += res1[1]
+        losesteplist[0].append(res1[1])
+    if res2[0] == 0:
+        wincnt[1] += 1
+        winstep[1] += res2[1]
+        winsteplist[1].append(res2[1])
+    elif res2[0] == 1:
+        losecnt[1] += 1
+        losestep[1] += res2[1]
+        losesteplist[1].append(res2[1])
+    gamecnt += 1
+print(f'dvi plays first:\ndvi win rate{wincnt[0]/allgamecnt} ave win step{winstep[0]/wincnt[0] if wincnt[0]!=0 else -1}\ndvi lose rate{losecnt[0]/allgamecnt} ave lose step{losestep[0]/losecnt[0] if losecnt[0]!=0 else -1}')
+print(f'greedy plays first:\ndvi win rate{wincnt[1]/allgamecnt} ave win step{winstep[1]/wincnt[1] if wincnt[1]!=0 else -1}\ndvi lose rate{losecnt[1]/allgamecnt} ave lose step{losestep[1]/losecnt[1] if losecnt[1]!=0 else -1}')
+print(winsteplist)
+print(losesteplist)
+# for path in paths:
+#     agent_dvi = create_dviagent(board_size, device, path, 'v1')
+#     # battle(board_size, agent_greedy, "greedy", agent_dvi, "dvi", "greedy vs dvi")
+#     battle(board_size, agent_dvi, "dvi", agent_mm, "base", f"{path} vs base")
+#     battle(board_size, agent_dvi, "dvi", agent_greedy, "greedy", f"{path} vs greedy")
