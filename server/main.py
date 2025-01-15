@@ -30,6 +30,7 @@ def init_game(
 ):
     global game
     global agent
+    global agent2
     game = GameState(board_size, player_num, MIRROR_GT)
     if game_type == GameType.PLAYER_VS_AI:
         agent = minmaxAgent_twoplayer(board_size, player_num, 3)
@@ -41,7 +42,6 @@ def init_game(
         for y in range(board_size * 4 + 1):
             if game.board.posInBoard((x, y)):
                 pos.append([x, y])
-    print(pos)
     return Result.ok(data=pos)
 
 

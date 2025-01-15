@@ -16,6 +16,23 @@ const enum GameType {
     AI_VS_AI = 3
 }
 
+const Selection = ({ setSelected }: { setSelected: React.Dispatch<React.SetStateAction<1 | 2 | 3 | 4 | 5 | 6>> }) => {
+    return (
+        <Select defaultValue="1" onValueChange={(val: string) => setSelected(parseInt(val) as 1 | 2 | 3 | 4 | 5 | 6)}>
+            <SelectTrigger className="w-4/5">
+                <SelectValue placeholder="AI Agent Type" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="1">Minmax</SelectItem>
+                <SelectItem value="2">Minmax with Function Approximate</SelectItem>
+                <SelectItem value="3">DVI</SelectItem>
+                <SelectItem value="4">Greedy</SelectItem>
+                <SelectItem value="5">Monte Carlo Tree Search</SelectItem>
+            </SelectContent>
+        </Select>
+    )
+}
+
 export default () => {
     const navigate = useNavigate()
     const dispatch = useDispatch<RootDispatch>()
@@ -26,7 +43,8 @@ export default () => {
             board_size: number = 3,
             agent_type = 1,
             agent2_type = 1
-        ): Promise<[number, number][]> => (await request.post("/game/init", null, { params: { player_num, game_type, board_size, agent_type, agent2_type } })).data,
+        ): Promise<[number, number][]> =>
+            (await request.post("/game/init", null, { params: { player_num, game_type, board_size, agent_type, agent2_type } })).data,
         {
             manual: true,
             onSuccess: (data: [number, number][]) => {
@@ -72,24 +90,31 @@ export default () => {
 
     return (
         <div className="w-screen h-screen overflow-hidden flex justify-center items-center">
+            <Dialog open={open3} onOpenChange={setOpen3}>
+                <DialogContent className="w-[30vw]">
+                    <DialogHeader>
+                        <DialogTitle>Agents Type</DialogTitle>
+                        <DialogDescription>choose two agent type</DialogDescription>
+                    </DialogHeader>
+                    <Selection setSelected={setAgent2Type} />
+                    <Selection setSelected={setAgentType} />
+                    <DialogFooter>
+                        <GlassButton className="text-lg w-1/6 after:bg-red-500 bg-red-500/20" onClick={() => setOpen2(false)}>
+                            cancel
+                        </GlassButton>
+                        <GlassButton className="text-lg w-1/6 after:bg-teal-300 bg-teal-300/20" onClick={AIWithAI}>
+                            submit
+                        </GlassButton>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
             <Dialog open={open2} onOpenChange={setOpen2}>
                 <DialogContent className="w-[30vw]">
                     <DialogHeader>
-                        <DialogTitle>Number of Player</DialogTitle>
-                        <DialogDescription>choose how many player you want to play with</DialogDescription>
+                        <DialogTitle>Agent Type</DialogTitle>
+                        <DialogDescription>choose type of agent</DialogDescription>
                     </DialogHeader>
-                    <Select defaultValue="2" onValueChange={(val: string) => setAgentType(parseInt(val) as 1 | 2 | 3 | 4 | 5 | 6)}>
-                        <SelectTrigger className="w-4/5">
-                            <SelectValue placeholder="AI Agent Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="1">Minmax</SelectItem>
-                            <SelectItem value="2">Minmax with Function Approximate</SelectItem>
-                            <SelectItem value="3">DVI</SelectItem>
-                            <SelectItem value="4">Greedy</SelectItem>
-                            <SelectItem value="5">Monte Carlo Tree Search</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <Selection setSelected={setAgentType} />
                     <DialogFooter>
                         <GlassButton className="text-lg w-1/6 after:bg-red-500 bg-red-500/20" onClick={() => setOpen2(false)}>
                             cancel
@@ -140,7 +165,7 @@ export default () => {
                     <GlassButton className="text-2xl w-2/3 after:bg-teal-100" onClick={() => setOpen2(true)}>
                         Play with AI
                     </GlassButton>
-                    <GlassButton className="text-2xl w-2/3 after:bg-teal-100" onClick={AIWithAI}>
+                    <GlassButton className="text-2xl w-2/3 after:bg-teal-100" onClick={() => setOpen3(true)}>
                         AI v.s. AI
                     </GlassButton>
                 </div>
