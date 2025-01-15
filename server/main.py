@@ -25,10 +25,16 @@ def init_game(board_size: int = 4, player_num: int = 1, game_type: GameType = Ga
     global agent
     game = GameState(board_size, player_num, MIRROR_GT)
     if game_type == GameType.PLAYER_VS_AI:
-        agent = minmaxAgent_twoplayer(board_size, player_num, 2)
+        agent = minmaxAgent_twoplayer(board_size, player_num, 3)
     elif game_type == GameType.AI_VS_AI:
         agent = minmaxAgent_multiplayer(board_size, player_num, 3)
-    return Result.ok()
+    pos = []
+    for x in range(board_size * 4 + 1):
+        for y in range(board_size * 4 + 1):
+            if game.board.posInBoard((x, y)):
+                pos.append([x, y])
+    print(pos)
+    return Result.ok(data=pos)
 
 
 @app.get("/checker/all_position/{player_num}")

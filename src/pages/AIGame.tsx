@@ -4,6 +4,7 @@ import { clearCycle, drawBoard, drawChecker, drawPosiblePos, getClickedChecker }
 import request, { Response } from "@/lib/request"
 import { RootDispatch, RootState } from "@/redux/model"
 import { Checker, Player } from "@/redux/model/checker"
+import { setBoardPos } from "@/redux/service/canvas"
 import { replay, updateCurrentPlayer } from "@/redux/service/game"
 import { useRequest } from "ahooks"
 import { useEffect, useRef, useCallback, useState } from "react"
@@ -24,7 +25,12 @@ export default () => {
     const dispatch = useDispatch<RootDispatch>()
     const navigate = useNavigate()
 
-    const init = useRequest(async (player_num: number) => await request.post("/game/init", null, { params: { player_num } }), { manual: true })
+    const init = useRequest(async (player_num: number) => (await request.post("/game/init", null, { params: { player_num, board_size: 3 } })).data, {
+        manual: true,
+        onSuccess: (data: [number, number][]) => {
+            dispatch(setBoardPos(data))
+        }
+    })
     const getCheckers = useRequest(async () => (await request.get(`/checker/all_position/${gameState.players ?? 1}`)) as Response<[number, number, Player][]>, {
         manual: true,
         onSuccess: (data) => {
@@ -54,7 +60,7 @@ export default () => {
             onError: (err) => console.error(err),
             onSuccess: (data: { playerID: Player; isWin: boolean }) => {
                 dispatch(updateCurrentPlayer(data.playerID))
-                setWinner((prev) => (data.isWin ? (((data.playerID - 1) % (gameState.players ?? 1)) as Player) : prev))
+                setWinner((prev) => (data.isWin ? (data.playerID as Player) : prev))
                 if (!data.isWin) agentMove.run()
             }
         }
@@ -71,7 +77,7 @@ export default () => {
                 if (!canvas || !pid) return
                 const checker: Checker = { position: endPos, player: pid, color: ["red", "blue", "green", "yellow", "purple", "orange"][pid] }
                 memeClearCycle(canvas, canvasConfig, startPos)
-                memeDrawChecker(canvas, canvasConfig.width, canvasConfig.height, [checker])
+                memeDrawChecker(canvas, canvasConfig.width, canvasConfig.height, [checker], canvasConfig.board_size)
                 setWinner((prev) => (data.isWin ? (1 as Player) : prev))
             }
         }
@@ -100,7 +106,7 @@ export default () => {
                             (checker) => checker.position[0] === selectedChecker.position[0] && checker.position[1] === selectedChecker.position[1]
                         )
                         checkers[index].position = [posX, posY]
-                        memeDrawChecker(canvas, canvas.width, canvas.height, [checkers[index]])
+                        memeDrawChecker(canvas, canvas.width, canvas.height, [checkers[index]], canvasConfig.board_size)
                     })
                     move.runAsync(selectedChecker.position, [posX, posY])
                 }
@@ -131,12 +137,13 @@ export default () => {
             navigate("/")
             return
         }
-        memeDrawBorad(canvasRef.current, canvasConfig.width, canvasConfig.height, canvasConfig.board, dispatch)
+        memeDrawBorad(canvasRef.current, canvasConfig.width, canvasConfig.height, canvasConfig.board, dispatch, canvasConfig.board_size)
         memeDrawChecker(
             canvasRef.current,
             canvasConfig.width,
             canvasConfig.height,
-            checkers.data.map(([x, y, player]) => ({ color: ["red", "blue", "green", "yellow", "purple", "orange"][player], player, position: [x, y] }))
+            checkers.data.map(([x, y, player]) => ({ color: ["red", "blue", "green", "yellow", "purple", "orange"][player], player, position: [x, y] })),
+            canvasConfig.board_size
         )
     }, [])
 
@@ -147,7 +154,7 @@ export default () => {
         const resizeCanvas = () => {
             canvas.width = window.innerWidth
             canvas.height = window.innerHeight
-            memeDrawBorad(canvas, canvas.width, canvas.height, canvasConfig.board, dispatch)
+            memeDrawBorad(canvas, canvas.width, canvas.height, canvasConfig.board, dispatch, canvasConfig.board_size)
         }
         // Initial resize
         resizeCanvas()
@@ -169,10 +176,11 @@ export default () => {
                     color: ["red", "blue", "green", "yellow", "purple", "orange"][player],
                     player,
                     position: [x, y]
-                }))
+                })),
+                canvasConfig.board_size
             )
         })
-        const draw = () => memeDrawChecker(canvas, canvas.width, canvas.height, checkers)
+        const draw = () => memeDrawChecker(canvas, canvas.width, canvas.height, checkers, canvasConfig.board_size)
         window.addEventListener("resize", draw)
         return () => window.removeEventListener("resize", draw)
     }, [])

@@ -10,4 +10,5 @@ export type CanvasConfig = {
     startX: number
     startY: number
     board: Board
+    board_size: number
 }

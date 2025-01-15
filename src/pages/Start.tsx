@@ -8,6 +8,7 @@ import { useNavigate } from "react-router"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { setBoardPos, setBoardSize } from "@/redux/service/canvas"
 
 const enum GameType {
     PLAYER_VS_PLAYER = 1,
@@ -19,13 +20,18 @@ export default () => {
     const navigate = useNavigate()
     const dispatch = useDispatch<RootDispatch>()
     const init = useRequest(
-        async (player_num: number, game_type: GameType = GameType.PLAYER_VS_PLAYER) =>
-            await request.post("/game/init", null, { params: { player_num, game_type } }),
+        async (player_num: number, game_type: GameType = GameType.PLAYER_VS_PLAYER, board_size: number = 4): Promise<[number, number][]> =>
+            (await request.post("/game/init", null, { params: { player_num, game_type, board_size } })).data,
         {
-            manual: true
+            manual: true,
+            onSuccess: (data: [number, number][]) => {
+                console.log(data)
+                dispatch(setBoardPos(data))
+            }
         }
     )
     const [open, setOpen] = useState(false)
+    const [open2, setOpen2] = useState(false)
     const [playerNum, setPlayerNum] = useState<2 | 3 | 6>(2)
 
     const singlePlayer = async () => {
@@ -43,18 +49,47 @@ export default () => {
     const playWithAI = async () => {
         dispatch(setType("AI"))
         dispatch(setNumPlayers(2))
-        await init.runAsync(2, GameType.PLAYER_VS_AI)
+        dispatch(setBoardSize(3 * 4 + 1))
+        await init.runAsync(2, GameType.PLAYER_VS_AI, 3)
         navigate("/ai")
     }
     const AIWithAI = async () => {
         dispatch(setType("AI vs AI"))
         dispatch(setNumPlayers(2))
-        await init.runAsync(2, GameType.AI_VS_AI)
+        dispatch(setBoardSize(3 * 4 + 1))
+        await init.runAsync(2, GameType.AI_VS_AI, 3)
         navigate("/ai_vs_ai")
     }
 
     return (
         <div className="w-screen h-screen overflow-hidden flex justify-center items-center">
+            <Dialog open={open2} onOpenChange={setOpen2}>
+                <DialogContent className="w-[30vw]">
+                    <DialogHeader>
+                        <DialogTitle>Number of Player</DialogTitle>
+                        <DialogDescription>choose how many player you want to play with</DialogDescription>
+                    </DialogHeader>
+                    <Select defaultValue="2" onValueChange={(val: string) => setPlayerNum(parseInt(val) as 2 | 3 | 6)}>
+                        <SelectTrigger className="w-4/5">
+                            <SelectValue placeholder="AI Agent Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="2">Minmax</SelectItem>
+                            <SelectItem value="3">Deep Learning</SelectItem>
+                            <SelectItem value="6">Reinforcement Learning</SelectItem>
+                            <SelectItem value="8">Monte Carlo Tree Search</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <DialogFooter>
+                        <GlassButton className="text-lg w-1/6 after:bg-red-500 bg-red-500/20" onClick={() => setOpen(false)}>
+                            cancel
+                        </GlassButton>
+                        <GlassButton className="text-lg w-1/6 after:bg-teal-300 bg-teal-300/20" onClick={playWithAI}>
+                            submit
+                        </GlassButton>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent className="w-[30vw]">
                     <DialogHeader>
@@ -92,7 +127,7 @@ export default () => {
                     <GlassButton className="text-2xl w-2/3 after:bg-teal-100" onClick={() => setOpen(true)}>
                         Multiple Player
                     </GlassButton>
-                    <GlassButton className="text-2xl w-2/3 after:bg-teal-100" onClick={playWithAI}>
+                    <GlassButton className="text-2xl w-2/3 after:bg-teal-100" onClick={() => setOpen2(true)}>
                         Play with AI
                     </GlassButton>
                     <GlassButton className="text-2xl w-2/3 after:bg-teal-100" onClick={AIWithAI}>
