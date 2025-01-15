@@ -5,6 +5,7 @@ import torch
 from game.game import GameState
 from agents.dviAgent import GreedyAgent, EmptyModel, DVIAgent, create_dviagent
 from agents.dviModel import dviValueModel, dviVM_V1
+from agents.MCTSagent import MCTSagent
 
 # w = np.array([1.06,0.47,-1.24]) # 63/70  -> FA first,FA wins 63steps/mm first,FA wins 70steps
 # w_ori = np.array([1,0.3,0.3]) # 69/66
@@ -191,3 +192,4 @@ print(losesteplist)
 #     # battle(board_size, agent_greedy, "greedy", agent_dvi, "dvi", "greedy vs dvi")
 #     battle(board_size, agent_dvi, "dvi", agent_mm, "base", f"{path} vs base")
 #     battle(board_size, agent_dvi, "dvi", agent_greedy, "greedy", f"{path} vs greedy")
+# battle(board_size, agent_MCTS, "MCTS", agent_mm, "base", "MCTS vs base")

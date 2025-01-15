@@ -2,6 +2,7 @@ from copy import deepcopy
 from typing import Optional, Tuple
 
 from game.utils import *
+from collections import deque
 
 
 class Board:
@@ -16,6 +17,8 @@ class Board:
         self.len = board_size * 4 + 1
         self.N = board_size
         self.player_num = player_num
+        self.board_np = np.zeros((self.len, self.len, BOARD_HIST_MOVES), dtype='uint8')
+        self.hist_moves = deque()
         self.board = [[EMPTY_BOX for i in range(self.len)] for j in range(self.len)]
         self.checkerlist = [[] for player in range(player_num)]
         self.winstate_pos = [set() for player in range(player_num)]
@@ -102,6 +105,7 @@ class Board:
             for x, y in self.checkerlist[player_id]:
                 self.board[x][y] = player_id+1
         self.triangle_pos_list = triangle_pos_list
+        self.board_np[:,:,0] = np.array(self.board)
 
     def posInBoard(self, pos):
         """
@@ -149,8 +153,17 @@ class Board:
         newBoard = deepcopy(self)
         newBoard.board[start_pos[0]][start_pos[1]] = EMPTY_BOX
         newBoard.board[end_pos[0]][end_pos[1]] = player_id+1
-        newBoard.checkerlist[player_id].remove(start_pos)
-        newBoard.checkerlist[player_id].append(end_pos)
+        for id, pos in enumerate(newBoard.checkerlist[player_id]):
+            if pos == start_pos:
+                newBoard.checkerlist[player_id][id] = end_pos
+        #newBoard.checkerlist[player_id].remove(start_pos)
+        #newBoard.checkerlist[player_id].append(end_pos)
+        
+        newBoard.board_np = np.concatenate((np.expand_dims(np.array(newBoard.board), axis=2), newBoard.board_np[:, :, :BOARD_HIST_MOVES - 1]), axis=2)
+        
+        if len(newBoard.hist_moves) == BOARD_HIST_MOVES:
+            newBoard.hist_moves.popleft()
+        newBoard.hist_moves.append((start_pos, end_pos))
         return newBoard
 
     def nextSteps(self, pos):
