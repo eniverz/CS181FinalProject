@@ -153,11 +153,12 @@ class Board:
         newBoard = deepcopy(self)
         newBoard.board[start_pos[0]][start_pos[1]] = EMPTY_BOX
         newBoard.board[end_pos[0]][end_pos[1]] = player_id+1
-        for id, pos in enumerate(newBoard.checkerlist[player_id]):
-            if pos == start_pos:
-                newBoard.checkerlist[player_id][id] = end_pos
-        #newBoard.checkerlist[player_id].remove(start_pos)
-        #newBoard.checkerlist[player_id].append(end_pos)
+        # for id, pos in enumerate(newBoard.checkerlist[player_id]):
+        #     if pos == start_pos:
+        #         newBoard.checkerlist[player_id][id] = end_pos
+        #         break
+        newBoard.checkerlist[player_id].remove(start_pos)
+        newBoard.checkerlist[player_id].append(end_pos)
         
         newBoard.board_np = np.concatenate((np.expand_dims(np.array(newBoard.board), axis=2), newBoard.board_np[:, :, :BOARD_HIST_MOVES - 1]), axis=2)
         
