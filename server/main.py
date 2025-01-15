@@ -73,4 +73,5 @@ def move_agent():
         raise HTTPException(status_code=HttpStatus.HTTP_400_BAD_REQUEST[0], detail="Agent is not initialized")
     agent.set_GameState(game)
     game = agent.get_next_gs()
-    return Result.ok(data=game.movement)
+    is_win = game.board.checkWin(1)
+    return Result.ok(data={"movement": game.movement, "isWin": is_win})

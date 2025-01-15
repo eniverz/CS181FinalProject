@@ -59,19 +59,23 @@ export default () => {
             }
         }
     )
-    const agentMove = useRequest(async (): Promise<[[number, number], [number, number]]> => (await request.get("/agent/move")).data, {
-        manual: true,
-        onSuccess: (data) => {
-            const startPos = data[0]
-            const endPos = data[1]
-            const pid = gameState.state.currentPlayer
-            const canvas = canvasRef.current
-            if (!canvas || !pid) return
-            const checker: Checker = { position: endPos, player: pid, color: ["red", "blue", "green", "yellow", "purple", "orange"][pid] }
-            memeClearCycle(canvas, canvasConfig, startPos)
-            memeDrawChecker(canvas, canvasConfig.width, canvasConfig.height, [checker])
+    const agentMove = useRequest(
+        async (): Promise<{ movement: [[number, number], [number, number]]; isWin: boolean }> => (await request.get("/agent/move")).data,
+        {
+            manual: true,
+            onSuccess: (data: { movement: [[number, number], [number, number]]; isWin: boolean }) => {
+                const startPos = data.movement[0]
+                const endPos = data.movement[1]
+                const pid = gameState.state.currentPlayer
+                const canvas = canvasRef.current
+                if (!canvas || !pid) return
+                const checker: Checker = { position: endPos, player: pid, color: ["red", "blue", "green", "yellow", "purple", "orange"][pid] }
+                memeClearCycle(canvas, canvasConfig, startPos)
+                memeDrawChecker(canvas, canvasConfig.width, canvasConfig.height, [checker])
+                setWinner((prev) => (data.isWin ? (1 as Player) : prev))
+            }
         }
-    })
+    )
 
     // Function to draw the board
     const memeDrawBorad = useCallback(drawBoard, [])
