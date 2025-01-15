@@ -23,7 +23,7 @@ export default () => {
         async (
             player_num: number,
             game_type: GameType = GameType.PLAYER_VS_PLAYER,
-            board_size: number = 4,
+            board_size: number = 3,
             agent_type = 1,
             agent2_type = 1
         ): Promise<[number, number][]> => (await request.post("/game/init", null, { params: { player_num, game_type, board_size, agent_type, agent2_type } })).data,
@@ -44,14 +44,14 @@ export default () => {
     const singlePlayer = async () => {
         dispatch(setType("single"))
         dispatch(setNumPlayers(1))
-        dispatch(setBoardSize(4 * 4 + 1))
+        dispatch(setBoardSize(3 * 4 + 1))
         await init.runAsync(1)
         navigate("/play")
     }
     const submitMultiplePlayer = async () => {
         dispatch(setType("multi"))
         dispatch(setNumPlayers(playerNum))
-        dispatch(setBoardSize(4 * 4 + 1))
+        dispatch(setBoardSize(3 * 4 + 1))
         await init.runAsync(playerNum)
         navigate("/play")
     }

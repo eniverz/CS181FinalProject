@@ -22,7 +22,7 @@ def get_root():
 
 @app.post("/game/init")
 def init_game(
-    board_size: int = 4,
+    board_size: int = 3,
     player_num: int = 1,
     game_type: GameType = GameType.PLAYER_VS_PLAYER,
     agent_type: AgentType = AgentType.MINMAX,
