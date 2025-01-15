@@ -72,6 +72,7 @@ agent_mm = minmaxAgent_twoplayer(board_size, 2, max_depth)
 agent_mm4 = minmaxAgent_twoplayer(board_size, 2, max_depth=4)
 agent_greedy = GreedyAgent(board_size, 2)
 agent_empty_dvi = DVIAgent(board_size, 2, EmptyModel(), device=device)
+agent_MCTS = MCTSagent(board_size, 2, max_depth)
 
 
 # from agents.valueModel import ValueNN, ValueModel
@@ -162,53 +163,53 @@ def battle(board_size, agent1, name1, agent2, name2, battle_name):
 # battle(board_size, agent_FA, "trained", agent_FA_ori, "ori", "TRAINED vs ORI")
 # battle(board_size, rlagent, "rl agent", agent_mm, "ori", "rl vs ori")
 # battle(board_size, agent_greedy, "greedy", agent_mm, "base", "greedy vs base")
-
+battle(board_size, agent_MCTS, "MCTS", agent_greedy, "greedy", "MCTS vs greedy")
 
 # paths = ['models/dvi/v1_iter50.pt','models/dvi/v1_iter100.pt','models/dvi/v1_iter150.pt','models/dvi/v1_iter200.pt','models/dvi/v1_iter250.pt',
 #         'models/dvi/v1_iter300.pt','models/dvi/v1_iter350.pt','models/dvi/v1_iter400.pt','models/dvi/v1_iter450.pt','models/dvi/v1_iter500.pt',
 #         'models/dvi/v1_iter550.pt','models/dvi/v1_iter600.pt','models/dvi/v1_iter650.pt','models/dvi/v1_iter700.pt']
 
-paths = ['models/v1_iter50.pt','models/v1_iter150.pt','models/v1_iter200.pt','models/v1_iter250.pt']
-agent_dvi = create_dviagent(board_size, device, paths[1], 'v1')
-wincnt = [0,0]
-winstep = [0,0]
-losecnt = [0,0]
-losestep = [0,0]
+# paths = ['models/v1_iter50.pt','models/v1_iter150.pt','models/v1_iter350.pt','models/v1_iter250.pt']
+# agent_dvi = create_dviagent(board_size, device, paths[2], 'v1')
+# wincnt = [0,0]
+# winstep = [0,0]
+# losecnt = [0,0]
+# losestep = [0,0]
 
 
-gamecnt = 0
-allgamecnt = 200
-winsteplist = [[],[]]
-losesteplist = [[],[]]
-total_agent1_time = 0
-total_agent2_time = 0
-while gamecnt < allgamecnt:
-    res1,res2,avg_time1,avg_time2 = battle(board_size, agent_FA, "minmax_FA", agent_greedy, "greedy", "minmax_FA vs greedy")
-    if res1[0] == 0:
-        wincnt[0] += 1
-        winstep[0] += res1[1]
-        winsteplist[0].append(res1[1])
-    elif res1[0] == 1:
-        losecnt[0] += 1
-        losestep[0] += res1[1]
-        losesteplist[0].append(res1[1])
-    if res2[0] == 0:
-        wincnt[1] += 1
-        winstep[1] += res2[1]
-        winsteplist[1].append(res2[1])
-    elif res2[0] == 1:
-        losecnt[1] += 1
-        losestep[1] += res2[1]
-        losesteplist[1].append(res2[1])
-    gamecnt += 1
-    total_agent1_time += avg_time1
-    total_agent2_time += avg_time2
-print(f'minmax_FA plays first:\nminmax_FA win rate{wincnt[0]/allgamecnt} ave win step{winstep[0]/wincnt[0] if wincnt[0]!=0 else -1}\nminmax_FA lose rate{losecnt[0]/allgamecnt} ave lose step{losestep[0]/losecnt[0] if losecnt[0]!=0 else -1}')
-print(f'greedy plays first:\ndvi win rate{wincnt[1]/allgamecnt} ave win step{winstep[1]/wincnt[1] if wincnt[1]!=0 else -1}\ndvi lose rate{losecnt[1]/allgamecnt} ave lose step{losestep[1]/losecnt[1] if losecnt[1]!=0 else -1}')
-print(winsteplist)
-print(losesteplist)
-print(f'Average time for minmax_FA: {total_agent1_time / allgamecnt:.6f} ms per step')
-print(f'Average time for greedy: {total_agent2_time / allgamecnt:.6f} ms per step')
+# gamecnt = 0
+# allgamecnt = 200
+# winsteplist = [[],[]]
+# losesteplist = [[],[]]
+# total_agent1_time = 0
+# total_agent2_time = 0
+# while gamecnt < allgamecnt:
+#     res1,res2,avg_time1,avg_time2 = battle(board_size, agent_dvi, "dvi", agent_greedy, "greedy", "dvi_iter350 vs greedy")
+#     if res1[0] == 0:
+#         wincnt[0] += 1
+#         winstep[0] += res1[1]
+#         winsteplist[0].append(res1[1])
+#     elif res1[0] == 1:
+#         losecnt[0] += 1
+#         losestep[0] += res1[1]
+#         losesteplist[0].append(res1[1])
+#     if res2[0] == 0:
+#         wincnt[1] += 1
+#         winstep[1] += res2[1]
+#         winsteplist[1].append(res2[1])
+#     elif res2[0] == 1:
+#         losecnt[1] += 1
+#         losestep[1] += res2[1]
+#         losesteplist[1].append(res2[1])
+#     gamecnt += 1
+#     total_agent1_time += avg_time1
+#     total_agent2_time += avg_time2
+# print(f'dvi_iter350 plays first:\ndvi_iter350 win rate{wincnt[0]/allgamecnt} ave win step{winstep[0]/wincnt[0] if wincnt[0]!=0 else -1}\ndvi_iter350 lose rate{losecnt[0]/allgamecnt} ave lose step{losestep[0]/losecnt[0] if losecnt[0]!=0 else -1}')
+# print(f'greedy plays first:\ndvi_iter350 win rate{wincnt[1]/allgamecnt} ave win step{winstep[1]/wincnt[1] if wincnt[1]!=0 else -1}\ndvi_iter350 lose rate{losecnt[1]/allgamecnt} ave lose step{losestep[1]/losecnt[1] if losecnt[1]!=0 else -1}')
+# print(winsteplist)
+# print(losesteplist)
+# print(f'Average time for dvi_iter350: {total_agent1_time / allgamecnt:.6f} ms per step')
+# print(f'Average time for greedy: {total_agent2_time / allgamecnt:.6f} ms per step')
 # for path in paths:
 #     agent_dvi = create_dviagent(board_size, device, path, 'v1')
 #     # battle(board_size, agent_greedy, "greedy", agent_dvi, "dvi", "greedy vs dvi")

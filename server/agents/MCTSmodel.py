@@ -77,7 +77,7 @@ class ResidualCNN(Model):
         layers.append(nn.BatchNorm2d(16))
         layers.append(nn.ReLU(inplace=True))
         layers.append(nn.Flatten())
-        layers.append(nn.Linear(16 * len * len, player_num * len * len))
+        layers.append(nn.Linear(16 * len * len, len * len * player_num))
         return nn.Sequential(*layers)
 
     def build_value_head(self, in_channels, len):

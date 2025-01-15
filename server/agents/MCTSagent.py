@@ -9,7 +9,7 @@ class Node:
         def __init__(self, gs):
             self.edges = []
             self.gs = gs
-            self.pi = np.zeros(gs.board.len * gs.board.len * gs.player_num, dtype='float64')
+            self.pi = np.zeros(gs.board.len * gs.board.len * gs.board.len, dtype='float64')
         
         def isLeaf(self):
             return len(self.edges) == 0
@@ -58,58 +58,80 @@ class MCTS:
         isWin = leafNode.gs.checkWin()
         if isWin:
             for edge in theWay:
-                direction = -1 if edge.curPID == leafNode.curPID else 1
+                direction = -1 if edge.fromNode.gs.curPID == leafNode.gs.curPID else 1
                 edge.state['N'] += 1
                 edge.state['W'] += direction
                 edge.state['Q'] = edge.state['W'] / float(edge.state['N'])
             return
         
-        pEval, vEval = self.model.predict(to_model_input(leafNode.gs))
+        # pEval, vEval = self.model.predict(to_model_input(leafNode.gs))
         
-        for nextGS in leafNode.gs.nextGameState():
+        baseR = float('-inf')
+        for nextGS in leafNode.gs.nextGameStates():
             fromPos = nextGS.movement[0]
             toPos = nextGS.movement[1]
             nxtPID = nextGS.curPID
-            checkerID = -1
-            for id, pos in enumerate(nextGS.getPlayerCheckers(leafNode.gs.curPID)):
-                if pos == fromPos:
-                    checkerID = id
-                    break
-            priorIndex = checkerID * nextGS.board.len * nextGS.board.len + fromPos[0] * nextGS.board.len + fromPos[1]
-            newNode = Node(nextGS)
-            newEdge = Edge(pEval[priorIndex], nextGS, leafNode, newNode)
-            leafNode.edges.append(newEdge)
+            # checkerID = -1
+            # for id, pos in enumerate(nextGS.board.getPlayerCheckers(leafNode.gs.curPID)):
+            #     if pos == fromPos:
+            #         checkerID = id
+            #         break
+            # priorIndex = checkerID * nextGS.board.len * nextGS.board.len + fromPos[0] * nextGS.board.len + fromPos[1]
+            pid = leafNode.gs.curPID
+            r = MahattanDIS(leafNode.gs.board.corners[pid], fromPos) - MahattanDIS(leafNode.gs.board.corners[pid], toPos)
+            if (r < 0):
+                r *= 0.01
+            if nextGS.checkWin():
+                r += 15
+            if r > baseR:
+                baseR = r
+                newNode = Node(nextGS)
+                newEdge = Edge(1, nextGS, leafNode, newNode)
+                leafNode.edges.append(newEdge)
+            # if(r > 0) :
+            #     newNode = Node(nextGS)
+            #     newEdge = Edge(1, nextGS, leafNode, newNode)
+            #     leafNode.edges.append(newEdge)
+            # else:
+            #     if(random.random() < 0.2):
+            #         newNode = Node(nextGS)
+            #         newEdge = Edge(1, nextGS, leafNode, newNode)
+            #         leafNode.edges.append(newEdge)
+            # newNode = Node(nextGS)
+            # newEdge = Edge(pEval[priorIndex], nextGS, leafNode, newNode)
+            # leafNode.edges.append(newEdge)
             
         for edge in theWay:
-            direction = 1 if edge.curPID == leafNode.curPID else -1
+            direction = 1 if edge.fromNode.gs.curPID == leafNode.gs.curPID else -1
             edge.state['N'] += 1
-            edge.state['W'] += vEval * direction
+            edge.state['W'] += direction #* vEval
             edge.state['Q'] = edge.state['W'] / float(edge.state['N'])
             
         
     def search(self):
-        for _ in range(100):
+        for _ in range(175):
             leaf, way = self.Selection()
             self.Expand_w_Backup(leaf, way)
             
-        maxN = float('-inf')
+        maxN = float('-inf')   
         chosenEdges = []
         
         for edge in self.root.edges:
             prob = edge.state['N']
             checkerID = -1
-            for id, pos in enumerate(self.root.gs.getPlayerCheckers(self.root.gs.curPID)):
+            for id, pos in enumerate(self.root.gs.board.getPlayerCheckers(self.root.gs.curPID)):
                 if pos == edge.fromPos:
                     checkerID = id
                     break
             netIndex = checkerID * self.root.gs.board.len * self.root.gs.board.len + edge.toPos[0] * self.root.gs.board.len + edge.toPos[1]
+            self.root.pi[netIndex] = prob
         
         self.root.pi /=np.sum(self.root.pi)
         
         sampleIndex = np.random.choice(np.arange(len(self.root.pi)), p=self.root.pi)
         for edge in self.root.edges:
             checkerID = -1
-            for id, pos in enumerate(self.root.gs.getPlayerCheckers(self.root.gs.curPID)):
+            for id, pos in enumerate(self.root.gs.board.getPlayerCheckers(self.root.gs.curPID)):
                 if pos == edge.fromPos:
                     checkerID = id
                     break
@@ -131,6 +153,7 @@ class MCTSagent_twoplayer(Agent):
         model = ResidualCNN(self.get_GameState())
         tree = MCTS(node, model)
         pi, edge = tree.search()
+        # print(edge.toNode.gs.movement)
         return edge.toNode.gs
     
 
