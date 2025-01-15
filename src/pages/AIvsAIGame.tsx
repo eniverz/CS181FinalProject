@@ -1,9 +1,10 @@
 import GlassButton from "@/components/GlassButton"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { clearCycle, drawBoard, drawChecker, drawPosiblePos, getClickedChecker } from "@/lib/draw"
+import { clearCycle, drawBoard, drawChecker } from "@/lib/draw"
 import request, { Response } from "@/lib/request"
 import { RootDispatch, RootState } from "@/redux/model"
 import { Checker, Player } from "@/redux/model/checker"
+import { setBoardPos } from "@/redux/service/canvas"
 import { replay, updateCurrentPlayer } from "@/redux/service/game"
 import { useRequest } from "ahooks"
 import { useEffect, useRef, useCallback, useState } from "react"
@@ -15,8 +16,6 @@ import { useImmer } from "use-immer"
 export default () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const [checkers, setCheckers] = useImmer<Checker[]>([])
-    const [selectedChecker, setSelectedChecker] = useState<Checker | null>(null)
-    const [availablePos, setAvailablePos] = useState<[number, number][]>([])
     const [winner, setWinner] = useState<Player | undefined>(undefined)
     const canvasConfig = useSelector((state: RootState) => state.canvas)
     const gameState = useSelector((state: RootState) => state.game)
@@ -24,7 +23,12 @@ export default () => {
     const dispatch = useDispatch<RootDispatch>()
     const navigate = useNavigate()
 
-    const init = useRequest(async (player_num: number) => await request.post("/game/init", null, { params: { player_num } }), { manual: true })
+    const init = useRequest(async (player_num: number) => (await request.post("/game/init", null, { params: { player_num, board_size: 3 } })).data, {
+        manual: true,
+        onSuccess: (data: [number, number][]) => {
+            dispatch(setBoardPos(data))
+        }
+    })
     const getCheckers = useRequest(async () => (await request.get(`/checker/all_position/${gameState.players ?? 1}`)) as Response<[number, number, Player][]>, {
         manual: true,
         onSuccess: (data) => {
@@ -36,25 +40,37 @@ export default () => {
                 }
                 setCheckers((checkers) => [...checkers, checker])
             }
-        },
-        onError: (err) => console.error(err)
+        }
     })
-    const getAvailablePos = useRequest(
-        async (x: number, y: number) => (await request.get(`/checker/available_pos`, { params: { x, y } })) as Response<[number, number][]>,
+    const agent2Move = useRequest(
+        async (): Promise<{ movement: [[number, number], [number, number]]; isWin: boolean }> => (await request.get("/agent2/move")).data,
         {
             manual: true,
-            onError: (err) => console.error(err)
+            onSuccess: (data: { movement: [[number, number], [number, number]]; isWin: boolean }) => {
+                const startPos = data.movement[0]
+                const endPos = data.movement[1]
+                const canvas = canvasRef.current
+                if (!canvas) return
+                const checker: Checker = { position: endPos, player: 1, color: ["red", "blue", "green", "yellow", "purple", "orange"][1] }
+                memeClearCycle(canvas, canvasConfig, startPos)
+                memeDrawChecker(canvas, canvasConfig.width, canvasConfig.height, [checker], canvasConfig.board_size)
+                setWinner((prev) => (data.isWin ? (0 as Player) : prev))
+            }
         }
     )
-    const move = useRequest(
-        async (start: [number, number], end: [number, number]) =>
-            (await request.post("/checker/move", null, { params: { start_x: start[0], start_y: start[1], end_x: end[0], end_y: end[1] } })).data,
+    const agentMove = useRequest(
+        async (): Promise<{ movement: [[number, number], [number, number]]; isWin: boolean }> => (await request.get("/agent/move")).data,
         {
             manual: true,
-            onError: (err) => console.error(err),
-            onSuccess: (data: { playerID: Player; isWin: boolean }) => {
-                dispatch(updateCurrentPlayer(data.playerID))
-                setWinner((prev) => (data.isWin ? data.playerID : prev))
+            onSuccess: (data: { movement: [[number, number], [number, number]]; isWin: boolean }) => {
+                const startPos = data.movement[0]
+                const endPos = data.movement[1]
+                const canvas = canvasRef.current
+                if (!canvas) return
+                const checker: Checker = { position: endPos, player: 0, color: ["red", "blue", "green", "yellow", "purple", "orange"][0] }
+                memeClearCycle(canvas, canvasConfig, startPos)
+                memeDrawChecker(canvas, canvasConfig.width, canvasConfig.height, [checker], canvasConfig.board_size)
+                setWinner((prev) => (data.isWin ? (1 as Player) : prev))
             }
         }
     )
@@ -63,44 +79,6 @@ export default () => {
     const memeDrawBorad = useCallback(drawBoard, [])
     const memeDrawChecker = useCallback(drawChecker, [])
     const memeClearCycle = useCallback(clearCycle, [])
-
-    const handleClick = useCallback(
-        async (event: React.MouseEvent<HTMLCanvasElement>) => {
-            const canvas = canvasRef.current
-            if (!canvas) return
-            const ctx = canvas.getContext("2d")
-            if (!ctx) return
-            const [posX, posY, actX, actY] = getClickedChecker(canvas, canvasConfig, event)
-            if (posX === undefined || posY === undefined || actX === undefined || actY === undefined) return
-            if (selectedChecker) {
-                // already select
-                if (availablePos.some(([x, y]) => x === posX && y === posY)) {
-                    // move
-                    memeClearCycle(canvas, canvasConfig, selectedChecker.position)
-                    setCheckers((checkers) => {
-                        const index = checkers.findIndex(
-                            (checker) => checker.position[0] === selectedChecker.position[0] && checker.position[1] === selectedChecker.position[1]
-                        )
-                        checkers[index].position = [posX, posY]
-                        memeDrawChecker(canvas, canvas.width, canvas.height, [checkers[index]], canvasConfig.board_size)
-                    })
-                    move.runAsync(selectedChecker.position, [posX, posY])
-                }
-                // clear
-                memeClearCycle(canvas, canvasConfig, availablePos)
-                setAvailablePos([])
-                setSelectedChecker(null)
-            } else {
-                // need select
-                const res = await getAvailablePos.runAsync(posX, posY)
-                if (!res) return
-                setAvailablePos(res.data)
-                drawPosiblePos(canvas, canvasConfig, res.data)
-                setSelectedChecker(checkers.find((checker) => checker.position[0] === posX && checker.position[1] === posY) || null)
-            }
-        },
-        [availablePos, selectedChecker, checkers]
-    )
 
     const restart = useCallback(async () => {
         dispatch(replay())
@@ -163,6 +141,21 @@ export default () => {
 
     return (
         <div className="w-full h-screen flex justify-center items-center bg-transparent">
+            <GlassButton
+                onClick={() => {
+                    if (gameState.state.currentPlayer === 1 || gameState.state.currentPlayer === undefined) {
+                        agent2Move.run()
+                        dispatch(updateCurrentPlayer(0))
+                    } else {
+                        agentMove.run()
+                        dispatch(updateCurrentPlayer(1))
+                    }
+                }}
+                className="absolute top-20 right-20 bg-emerald-500/20  after:bg-emerald-500"
+                disabled={agent2Move.loading || agentMove.loading}
+            >
+                Next Player: {gameState.state.currentPlayer ?? 0}
+            </GlassButton>
             <Dialog open={winner !== undefined}>
                 <DialogContent showClose={false}>
                     <DialogHeader>
@@ -180,7 +173,7 @@ export default () => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-            <canvas ref={canvasRef} onClick={handleClick} />
+            <canvas ref={canvasRef} />
         </div>
     )
 }

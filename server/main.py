@@ -5,13 +5,14 @@ from agents.minmaxAgent import minmaxAgent_multiplayer, minmaxAgent_twoplayer
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from game.game import MIRROR_GT, GameState
-from service.utils import GameType, HttpStatus, Result
+from service.utils import AgentType, GameType, HttpStatus, Result, get_agent_by_type
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 game = GameState(4, 1, MIRROR_GT)
 agent: Optional[Agent] = None
+agent2: Optional[Agent] = None
 
 
 @app.get("/")
@@ -20,15 +21,28 @@ def get_root():
 
 
 @app.post("/game/init")
-def init_game(board_size: int = 4, player_num: int = 1, game_type: GameType = GameType.PLAYER_VS_PLAYER):
+def init_game(
+    board_size: int = 3,
+    player_num: int = 1,
+    game_type: GameType = GameType.PLAYER_VS_PLAYER,
+    agent_type: AgentType = AgentType.MINMAX,
+    agent2_type: AgentType = AgentType.MINMAX,
+):
     global game
     global agent
+    global agent2
     game = GameState(board_size, player_num, MIRROR_GT)
     if game_type == GameType.PLAYER_VS_AI:
-        agent = minmaxAgent_twoplayer(board_size, player_num, 2)
+        agent = minmaxAgent_twoplayer(board_size, player_num, 3)
     elif game_type == GameType.AI_VS_AI:
-        agent = minmaxAgent_multiplayer(board_size, player_num, 3)
-    return Result.ok()
+        agent = get_agent_by_type(agent_type, board_size, player_num, 3)
+        agent2 = get_agent_by_type(agent2_type, board_size, player_num, 3)
+    pos = []
+    for x in range(board_size * 4 + 1):
+        for y in range(board_size * 4 + 1):
+            if game.board.posInBoard((x, y)):
+                pos.append([x, y])
+    return Result.ok(data=pos)
 
 
 @app.get("/checker/all_position/{player_num}")
@@ -74,4 +88,15 @@ def move_agent():
     agent.set_GameState(game)
     game = agent.get_next_gs()
     is_win = game.board.checkWin(1)
+    return Result.ok(data={"movement": game.movement, "isWin": is_win})
+
+@app.get("/agent2/move")
+def move_agent2():
+    global game
+    global agent2
+    if agent2 is None:
+        raise HTTPException(status_code=HttpStatus.HTTP_400_BAD_REQUEST[0], detail="Agent is not initialized")
+    agent2.set_GameState(game)
+    game = agent2.get_next_gs()
+    is_win = game.board.checkWin(0)
     return Result.ok(data={"movement": game.movement, "isWin": is_win})

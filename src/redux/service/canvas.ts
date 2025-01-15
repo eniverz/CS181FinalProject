@@ -127,6 +127,7 @@ const initialBoardPos: [number, number][] = [
 
 const initialState: CanvasConfig = {
     board: initialBoardPos,
+    board_size: 4 * 4 + 1,
     width: window.innerWidth,
     height: window.innerHeight,
     dotRadius: Math.min(window.innerWidth, window.innerHeight) * 0.02,
@@ -162,9 +163,15 @@ const canvas = createSlice({
 
             if (payload.startY) state.startY = payload.startY
             else state.startY = state.centerY - 8 * Math.sqrt(0.75) * state.margin
+        },
+        setBoardPos(state: CanvasConfig, { payload }: { payload: [number, number][] }) {
+            state.board = payload
+        },
+        setBoardSize(state: CanvasConfig, { payload }: { payload: number }) {
+            state.board_size = payload
         }
     }
 })
 
 export default canvas.reducer
-export const { setCanvasConfig } = canvas.actions
+export const { setCanvasConfig, setBoardPos, setBoardSize } = canvas.actions

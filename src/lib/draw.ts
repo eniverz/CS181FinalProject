@@ -14,7 +14,7 @@ const drawDot = (ctx: CanvasRenderingContext2D, x: number, y: number, radius: nu
     ctx.stroke()
 }
 
-export const drawBoard = (canvas: HTMLCanvasElement, width: number, height: number, board: [number, number][], dispatch: RootDispatch) => {
+export const drawBoard = (canvas: HTMLCanvasElement, width: number, height: number, board: [number, number][], dispatch: RootDispatch, board_size: number = 4) => {
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
@@ -33,8 +33,9 @@ export const drawBoard = (canvas: HTMLCanvasElement, width: number, height: numb
     ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
     ctx.stroke()
     const margin = 2.5 * dotRadius
-    const startX = centerX - 8 * (1 + 0.5) * margin
-    const startY = centerY - 8 * Math.sqrt(0.75) * margin
+    const edge = (board_size - 1) / 2
+    const startX = centerX - edge * (1 + 0.5) * margin
+    const startY = centerY - edge * Math.sqrt(0.75) * margin
 
     dispatch(setCanvasConfig({ width, height, dotRadius, margin, centerX, centerY, startX, startY }))
 
@@ -66,13 +67,14 @@ export const getClickedChecker = (
     return [posX, posY, actX, actY]
 }
 
-export const drawChecker = (canvas: HTMLCanvasElement, width: number, height: number, checkers: Checker[]) => {
+export const drawChecker = (canvas: HTMLCanvasElement, width: number, height: number, checkers: Checker[], board_size: number = 4) => {
     const centerX = width / 2
     const centerY = height / 2
     const dotRadius = Math.min(width, height) * 0.02 // Dot radius as 5% of smaller dimension
     const margin = 2.5 * dotRadius
-    const startX = centerX - 8 * (1 + 0.5) * margin
-    const startY = centerY - 8 * Math.sqrt(0.75) * margin
+    const edge = (board_size - 1) / 2
+    const startX = centerX - edge * (1 + 0.5) * margin
+    const startY = centerY - edge * Math.sqrt(0.75) * margin
 
     const ctx = canvas.getContext("2d")
     if (!ctx) return
