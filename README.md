@@ -60,8 +60,7 @@ use fast API for service
 - [x] is win / is loss
 - [x] change player
 - [x] ai agent
-- [ ] ai vs ai
-- [ ] connect
+- [x] ai vs ai
 
 #### Algorithm
 
@@ -72,6 +71,10 @@ use fast API for service
 - [x] game: which position is available for selected checker => return a list of position
 - [x] agent: reward function or evaluate function( the distance to target? )
 - [x] agent: use minmax search
-- [ ] agent: better evaluate function
-- [ ] agent: why the agent is so stupid
-- [ ] agent: use reinforcement learning
+- [x] agent: better evaluate function
+- [x] agent: why the agent is so stupid
+- [x] agent: use reinforcement learning
+- [x] agent: dvi
+- [x] agent: minmax function approximate
+- [x] agent: mcts
+- [ ] agent: dl minmax
